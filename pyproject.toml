@@ -1,0 +1,35 @@
+[tool.ruff]
+include = [
+  "neurons/**/*.py",
+  "fakenews/**/*.py",
+  "tests/**/*.py",
+]
+line-length = 125
+
+[tool.ruff.lint]
+ignore = [
+  "SIM102", "E501", "BLE001"
+]
+select = [
+  "FBT", "RET", "S", "I", "YTT", "ASYNC", "BLE", "B", "C4", "T10", "EXE", "ICN", "INP", "PIE", "T20", "PYI", "Q",
+  "TID", "RSE", "SLF", "SLOT", "SIM", "TCH", "INT", "E", "W", "RUF", "ERA", "N", "PL", "TID",
+]
+
+[tool.ruff.lint.extend-per-file-ignores]
+"tests/*" = ["S101", "PLR2004", "PLR0913" , "FBT003", "T201"]
+
+[tool.ruff.lint.pylint]
+max-args = 8
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+split-on-trailing-comma=false
+combine-as-imports=true
+order-by-type=true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+addopts = [
+    "--show-capture=stdout",
+    "--disable-warnings",
+]
