@@ -12,7 +12,6 @@ set +a
 REQUIRED_ENV_VARS=(
   "NETUID"
   "SUBTENSOR_NETWORK"
-  "SUBTENSOR_CHAIN_ENDPOINT"
   "WALLET_NAME"
   "WALLET_HOTKEY"
   "OPENAI_API_KEY"
@@ -46,7 +45,7 @@ CMD="pm2 start neurons/miner.py --name $PROCESS_NAME --"
 # Add mandatory arguments
 CMD+=" --netuid $NETUID"
 CMD+=" --subtensor.network $SUBTENSOR_NETWORK"
-CMD+=" --subtensor.chain_endpoint $SUBTENSOR_CHAIN_ENDPOINT"
+[ -n "$SUBTENSOR_CHAIN_ENDPOINT" ] && CMD+=" --subtensor.chain_endpoint $SUBTENSOR_CHAIN_ENDPOINT"
 CMD+=" --wallet.name $WALLET_NAME"
 CMD+=" --wallet.hotkey $WALLET_HOTKEY"
 CMD+=" --openai_api_key $OPENAI_API_KEY"
