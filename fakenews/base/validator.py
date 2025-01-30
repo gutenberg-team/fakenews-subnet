@@ -47,7 +47,7 @@ class BaseValidatorNeuron(BaseNeuron):
     """
 
     neuron_type: str = "ValidatorNeuron"
-    FORWARD_DELAY_SECONDS: int = 300
+    FORWARD_DELAY_SECONDS: int = 60
 
     @classmethod
     def add_args(cls, parser: argparse.ArgumentParser):
