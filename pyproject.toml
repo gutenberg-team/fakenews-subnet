@@ -16,7 +16,7 @@ select = [
 ]
 
 [tool.ruff.lint.extend-per-file-ignores]
-"tests/*" = ["S101", "PLR2004", "PLR0913" , "FBT003", "T201"]
+"tests/*" = ["S101", "PLR2004", "PLR0913" , "FBT003", "T201", "SLF001"]
 
 [tool.ruff.lint.pylint]
 max-args = 8
