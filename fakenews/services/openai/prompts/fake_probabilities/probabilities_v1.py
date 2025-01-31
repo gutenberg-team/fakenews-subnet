@@ -5,7 +5,7 @@ from fakenews.services.openai.prompts import MinerPrompt
 
 class GetProbabilitesPrompt(MinerPrompt):
     VERSION = "probabilities_v1"
-    TARGET_MODEL = "gpt-4o"
+    TARGET_MODEL = "gpt-4o-mini"
     PROMPT_TEMPLATE = """
     Role: You are a professional journalist with extensive experience in writing and analyzing articles.
     Your press office frequently uses quotations from various sources, so you are skilled at determining whether an article is fabricated or credible.

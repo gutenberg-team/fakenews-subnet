@@ -81,7 +81,7 @@ Wallet Configuration:
 **NOTE:** To act as a validator in this subnet, you must stake more than 4096 TAO.
 
 API Keys:
-* `OPENAI_API_KEY` - OpenAI API key. You should provide your own paid key with access to gpt-4o model.
+* `OPENAI_API_KEY` - OpenAI API key. You should provide your own paid key with access to "gpt-4o-mini" model.
 * `WANDB_API_KEY` - Optional - Wandb API key for logging.
 
 Example:
