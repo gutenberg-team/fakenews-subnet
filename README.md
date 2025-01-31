@@ -127,7 +127,7 @@ If you are interested in mining, follow this [guide](docs/MINER.md).
 
 ## Reward Mechanism
 
-Validators store the 100 most recent response results for each miner. Each response generates two retrospective results (for both paraphrased and generated fake articles).
+Validators store the 250 most recent responses for each miner (500 results). Each response generates two retrospective results (for both paraphrased and generated fake articles).
 
 These retrospective results are used to calculate the final reward score:
 
@@ -137,12 +137,15 @@ $$
 
 where:
 
-- **Accuracy**: Analytical metric based on the last N results ([see more](https://scikit-learn.org/1.5/modules/generated/sklearn.metrics.accuracy_score.html)).
-  - **Long**: Long-term period window (150 results).
-  - **Short**: Short-term period window (20 results).
+- **Accuracy**: Analytical metric based on the last N results ([see more](https://scikit-learn.org/1.5/modules/generated/sklearn.metrics.accuracy_score.html)). 
+  - **Long**: Long-term period window (300 results ~ 150 answers).
+  - **Short**: Short-term period window (20 results ~ 10 answers).
+  - **NOTE**: Accuracy is counted for the full number of responses. For example, if the window is equal to 300 results, and the miner is new and answered the very first task correctly, then his accuracy equal `1.0` will be multiplied by the coefficient `2 / 300`, because there are only 2 answers in his retrospective history. Thus, a miner with 100% correct answers will get `1.0` as a reward when he answers 150 tasks.
 - **α**: Weight for long-term retrospective, set to 0.5.
 
-This approach avoids randomly generating responses and obtaining an emission for the miner, while still ensuring that the miner can obtain an emission if the miner has started to respond correctly.
+This approach avoids randomly generating responses and obtaining an emission for the miner, while still ensuring that the miner can obtain an emission if the miner has started to respond correctly. As well as allows new miners who start to answer well to quickly pass the 0.5 reward threshold and then smoothly increase their answers to 1.
+
+This approach is expected to provide healthier and more adequate competition in the subnetwork and reduce dispersion.
 
 ## License
 
