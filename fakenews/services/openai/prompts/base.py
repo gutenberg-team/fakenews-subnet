@@ -8,15 +8,14 @@ class Prompt(ABC):
     TARGET_MODEL: str
 
     @abstractmethod
-    def normalize_result(self) -> Any:
-        ...
+    def normalize_result(self) -> Any: ...
 
     @abstractmethod
-    def generate_messages(self, *arg, **kwargs) -> list[dict[str, str]]:
-        ...
+    def generate_messages(self, *arg, **kwargs) -> list[dict[str, str]]: ...
+
 
 class ValidatorPrompt(Prompt):
     LABEL_PROBABILITY: float
 
-class MinerPrompt(Prompt):
-    ...
+
+class MinerPrompt(Prompt): ...

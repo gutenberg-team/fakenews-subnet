@@ -3,7 +3,7 @@ from fakenews.services.openai.prompts import ValidatorPrompt
 
 class StrongOriginalV5Prompt(ValidatorPrompt):
     VERSION = "strong_original_v5"
-    TARGET_MODEL = "gpt-4o"
+    TARGET_MODEL = "gpt-4o-mini"
     LABEL_PROBABILITY = 0.0
     PROMPT_TEMPLATE = """
     Role: You are a professional journalist with extensive experience in writing and analyzing articles

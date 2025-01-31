@@ -28,7 +28,7 @@ class RewardCalculator:
     _LONG_ALPHA: Final[float] = (
         0.5  # Weight for long term performance, 1 - _LONG_ALPHA is the weight for short term performance
     )
-    _LONG_TERM_WINDOW: Final[int] = 150
+    _LONG_TERM_WINDOW: Final[int] = 300
     _SHORT_TERM_WINDOW: Final[int] = 20
 
     @classmethod

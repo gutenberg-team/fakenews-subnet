@@ -18,6 +18,7 @@ from . import ValidatorTask
 if TYPE_CHECKING:
     from substrateinterface import Keypair
 
+
 class OriginalArticleMetadata(BaseModel):
     body: str
     _id: int = PrivateAttr()
@@ -28,11 +29,13 @@ class OriginalArticleMetadata(BaseModel):
         super().__init__(**data)
         self._id = data.get("_id")
 
+
 class GeneratedArticleMetadata(BaseModel):
     body: str
     label: float
     model_version: str
     prompt_version: str
+
 
 class Metadata(BaseModel):
     """
@@ -91,9 +94,7 @@ class FakenewsDetectionWithOriginal(ValidatorTask):
         prompts = [p(article_text) for p in self._select_sampled_prompts()]
 
         try:
-            results = await asyncio.gather(
-                *(self._openai_client.get_prompt_completions_async(p) for p in prompts)
-            )
+            results = await asyncio.gather(*(self._openai_client.get_prompt_completions_async(p) for p in prompts))
         except BaseException as e:
             bt.logging.error("Failed to fetch articles from LLM: %s", e)
             traceback.print_exc()
@@ -103,12 +104,14 @@ class FakenewsDetectionWithOriginal(ValidatorTask):
         for prompt, result in zip(prompts, results):
             prompt: ValidatorPrompt
             label = prompt.LABEL_PROBABILITY
-            generated_articles_metadata.append(GeneratedArticleMetadata(
-                body=result,
-                label=label,
-                model_version=prompt.TARGET_MODEL,
-                prompt_version=prompt.VERSION,
-            ))
+            generated_articles_metadata.append(
+                GeneratedArticleMetadata(
+                    body=result,
+                    label=label,
+                    model_version=prompt.TARGET_MODEL,
+                    prompt_version=prompt.VERSION,
+                )
+            )
 
         shuffle(generated_articles_metadata)
         labels = [a.label for a in generated_articles_metadata]
@@ -143,13 +146,15 @@ class FakenewsDetectionWithOriginal(ValidatorTask):
         dataset = []
         original_id = self.__metadata.original_article_metadata._id  # noqa: SLF001
         for generated_article in self.__metadata.generated_articles_metadata:
-            dataset.append(SaveLLMRewrittenArticleModel(
-                original_id=original_id,
-                body=generated_article.body,
-                model_version=generated_article.model_version,
-                prompt_version=generated_article.prompt_version,
-                type="fake" if generated_article.label == 1.0 else "paraphrased"
-            ).model_dump())
+            dataset.append(
+                SaveLLMRewrittenArticleModel(
+                    original_id=original_id,
+                    body=generated_article.body,
+                    model_version=generated_article.model_version,
+                    prompt_version=generated_article.prompt_version,
+                    type="fake" if generated_article.label == 1.0 else "paraphrased",
+                ).model_dump()
+            )
         await self._news_api_client.save_articles_dataset(dataset)
 
     def _select_sampled_prompts(self) -> list[ValidatorPrompt]:
