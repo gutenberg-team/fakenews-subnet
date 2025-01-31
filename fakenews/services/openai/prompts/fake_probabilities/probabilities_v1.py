@@ -63,7 +63,6 @@ class GetProbabilitesPrompt(MinerPrompt):
         except json.JSONDecodeError as e:
             raise ValueError(f"Failed to parse JSON from response: {cleaned_response}") from e
 
-
     def generate_messages(self) -> list[dict[str, str]]:
         articles_text = "\n".join([f"```{n}. \n{a}\n```" for n, a in enumerate(self.articles_to_review, start=1)])
         return [
