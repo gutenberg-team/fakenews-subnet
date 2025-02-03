@@ -81,7 +81,7 @@ def test_get_rewards_short_period_positive_retrospective_half_reward(task, axons
     for _ in range(RewardCalculator._SHORT_TERM_WINDOW):
         performance_tracker.update(1, 1, 1, "1")
     rewards, _ = RewardCalculator.get_rewards(labels, [labels], uids, axons(uids), performance_trackers, task)
-    assert np.greater_equal(rewards, np.array([0.5])).all()
+    assert np.greater(rewards, np.array([0.5])).all()
 
 
 def test_get_rewards_full_positive_retrospective_last_negative_half_reward(
@@ -94,7 +94,7 @@ def test_get_rewards_full_positive_retrospective_last_negative_half_reward(
     for _ in range(RewardCalculator._SHORT_TERM_WINDOW):
         performance_tracker.update(1, 0, 1, "1")
     rewards, _ = RewardCalculator.get_rewards(labels, [labels[::-1]], uids, axons(uids), performance_trackers, task)
-    assert np.less_equal(rewards, np.array([0.5])).all()
+    assert np.less(rewards, np.array([0.5])).all()
 
 
 @pytest.mark.parametrize(
@@ -121,3 +121,15 @@ def test_rewards_full_negative_and_empty_retrospective_are_equal(
     responses = [response, response]
     rewards, _ = RewardCalculator.get_rewards(labels, responses, uids, axons(uids), performance_trackers, task)
     assert rewards[0] == rewards[1]
+
+
+def test_rewards_almost_full_positive_retrospective_less_than_1(
+    task, axons, performance_tracker, performance_trackers
+):
+    labels = [0, 1]
+    uids = [1]
+    for _ in range(RewardCalculator._LONG_TERM_WINDOW - 3):
+        performance_tracker.update(1, 1, 1, "1")
+
+    rewards, _ = RewardCalculator.get_rewards(labels, [labels], uids, axons(uids), performance_trackers, task)
+    assert np.less(rewards, np.array([1])).all()
