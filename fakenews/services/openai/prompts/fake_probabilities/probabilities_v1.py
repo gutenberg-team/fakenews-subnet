@@ -5,7 +5,7 @@ from fakenews.services.openai.prompts import MinerPrompt
 
 class GetProbabilitesPrompt(MinerPrompt):
     VERSION = "probabilities_v1"
-    TARGET_MODEL = "gpt-4o"
+    TARGET_MODEL = "gpt-4o-mini"
     PROMPT_TEMPLATE = """
     Role: You are a professional journalist with extensive experience in writing and analyzing articles.
     Your press office frequently uses quotations from various sources, so you are skilled at determining whether an article is fabricated or credible.
@@ -62,7 +62,6 @@ class GetProbabilitesPrompt(MinerPrompt):
             raise ValueError("The response did not return a valid list of floats.")
         except json.JSONDecodeError as e:
             raise ValueError(f"Failed to parse JSON from response: {cleaned_response}") from e
-
 
     def generate_messages(self) -> list[dict[str, str]]:
         articles_text = "\n".join([f"```{n}. \n{a}\n```" for n, a in enumerate(self.articles_to_review, start=1)])

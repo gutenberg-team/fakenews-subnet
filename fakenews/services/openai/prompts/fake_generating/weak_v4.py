@@ -3,7 +3,7 @@ from fakenews.services.openai.prompts import ValidatorPrompt
 
 class WeakFakeV4Prompt(ValidatorPrompt):
     VERSION = "weak_fake_v4"
-    TARGET_MODEL = "gpt-4o"
+    TARGET_MODEL = "gpt-4o-mini"
     LABEL_PROBABILITY = 1.0
     PROMPT_TEMPLATE = """
     Follow these steps to analyze the news article. The contents of the article will be delimited with special string: `####`.

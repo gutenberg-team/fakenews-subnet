@@ -92,7 +92,7 @@ Wallet Configuration:
 * `WALLET_HOTKEY` - Hotkey name.
 
 API Keys:
-* `OPENAI_API_KEY` - OpenAI API key. You should provide your own paid key with access to gpt-4o model.
+* `OPENAI_API_KEY` - OpenAI API key. You should provide your own paid key with access to "gpt-4o-mini" model.
 
 Example (look at `miner.env.example` as well):
 ```bash

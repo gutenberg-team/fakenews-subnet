@@ -399,7 +399,8 @@ class BaseValidatorNeuron(BaseNeuron):
             if os.path.exists(path):
                 bt.logging.info(f"Loading miner performance history from {path}")
                 try:
-                    tracker = joblib.load(path)
+                    tracker: PerformanceTracker = joblib.load(path)
+                    tracker.validate_storage_predictions_count()
                     num_miners_history = len(
                         [
                             uid
