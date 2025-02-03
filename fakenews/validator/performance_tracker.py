@@ -10,11 +10,41 @@ class PerformanceTracker:
     Tracks all recent miner performance to facilitate reward computation.
     """
 
-    def __init__(self, store_last_n_predictions: int = 500):
+    STORE_LAST_N_PREDICTIONS_DEFAULT = 500
+
+    def __init__(self, store_last_n_predictions: int = STORE_LAST_N_PREDICTIONS_DEFAULT):
         self.prediction_history: dict[int, deque] = {}
         self.label_history: dict[int, deque] = {}
         self.miner_hotkeys: dict[int, str] = {}
         self.store_last_n_predictions: int = store_last_n_predictions
+
+    def validate_storage_predictions_count(self):
+        if self.store_last_n_predictions != self.STORE_LAST_N_PREDICTIONS_DEFAULT:
+            bt.logging.warning(
+                f"PerformanceTracker is storing {self.store_last_n_predictions} predictions, "
+                f"which is different from the default {self.STORE_LAST_N_PREDICTIONS_DEFAULT}."
+            )
+            self.store_last_n_predictions = self.STORE_LAST_N_PREDICTIONS_DEFAULT
+
+            for uid in self.prediction_history:
+                if len(self.prediction_history[uid]) > self.store_last_n_predictions:
+                    self.prediction_history[uid] = deque(
+                        list(self.prediction_history[uid])[-self.store_last_n_predictions :],
+                        maxlen=self.store_last_n_predictions,
+                    )
+                    self.label_history[uid] = deque(
+                        list(self.label_history[uid])[-self.store_last_n_predictions :],
+                        maxlen=self.store_last_n_predictions,
+                    )
+                elif len(self.prediction_history[uid]) < self.store_last_n_predictions:
+                    self.prediction_history[uid] = deque(
+                        list(self.prediction_history[uid]),
+                        maxlen=self.store_last_n_predictions,
+                    )
+                    self.label_history[uid] = deque(
+                        list(self.label_history[uid]),
+                        maxlen=self.store_last_n_predictions,
+                    )
 
     def reset_miner_history(self, uid: int, miner_hotkey: str):
         """
@@ -62,6 +92,16 @@ class PerformanceTracker:
 
         # If window is larger than available data, use all available data
         if window is not None:
+            if window <= 0:
+                bt.logging.error(f"Invalid window size: {window}")
+                return available_metrics
+
+            if window > self.store_last_n_predictions:
+                bt.logging.warning(
+                    f"Requested window size {window} is larger than the stored predictions {self.store_last_n_predictions}."
+                )
+                window = min(window, self.store_last_n_predictions)
+
             _window = min(window, len(recent_preds))
             recent_preds = recent_preds[-_window:]
             recent_labels = recent_labels[-_window:]

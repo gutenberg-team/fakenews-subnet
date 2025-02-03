@@ -36,12 +36,7 @@ async def forward(self: BaseValidatorNeuron):
         bt.logging.info("No miners available")
         return
 
-    try:
-        task: ValidatorTask = select_task(self.tasks)
-    except AssertionError as e:
-        bt.logging.error(f"Failed to select task: {e}")
-        return
-
+    task: ValidatorTask = select_task(self.tasks)
     bt.logging.info(f"Selected task: {task.TASK_NAME}")
 
     try:
