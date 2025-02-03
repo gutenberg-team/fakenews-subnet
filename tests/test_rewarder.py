@@ -123,9 +123,7 @@ def test_rewards_full_negative_and_empty_retrospective_are_equal(
     assert rewards[0] == rewards[1]
 
 
-def test_rewards_almost_full_positive_retrospective_less_than_1(
-    task, axons, performance_tracker, performance_trackers
-):
+def test_rewards_almost_full_positive_retrospective_less_than_1(task, axons, performance_tracker, performance_trackers):
     labels = [0, 1]
     uids = [1]
     for _ in range(RewardCalculator._LONG_TERM_WINDOW - 3):

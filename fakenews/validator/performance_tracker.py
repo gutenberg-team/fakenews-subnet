@@ -9,6 +9,7 @@ class PerformanceTracker:
     """
     Tracks all recent miner performance to facilitate reward computation.
     """
+
     STORE_LAST_N_PREDICTIONS_DEFAULT = 500
 
     def __init__(self, store_last_n_predictions: int = STORE_LAST_N_PREDICTIONS_DEFAULT):
@@ -28,11 +29,11 @@ class PerformanceTracker:
             for uid in self.prediction_history:
                 if len(self.prediction_history[uid]) > self.store_last_n_predictions:
                     self.prediction_history[uid] = deque(
-                        list(self.prediction_history[uid])[-self.store_last_n_predictions:],
+                        list(self.prediction_history[uid])[-self.store_last_n_predictions :],
                         maxlen=self.store_last_n_predictions,
                     )
                     self.label_history[uid] = deque(
-                        list(self.label_history[uid])[-self.store_last_n_predictions:],
+                        list(self.label_history[uid])[-self.store_last_n_predictions :],
                         maxlen=self.store_last_n_predictions,
                     )
                 elif len(self.prediction_history[uid]) < self.store_last_n_predictions:
