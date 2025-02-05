@@ -45,7 +45,6 @@ CMD="pm2 start neurons/miner.py --name $PROCESS_NAME --"
 # Add mandatory arguments
 CMD+=" --netuid $NETUID"
 CMD+=" --subtensor.network $SUBTENSOR_NETWORK"
-[ -n "$SUBTENSOR_CHAIN_ENDPOINT" ] && CMD+=" --subtensor.chain_endpoint $SUBTENSOR_CHAIN_ENDPOINT"
 CMD+=" --wallet.name $WALLET_NAME"
 CMD+=" --wallet.hotkey $WALLET_HOTKEY"
 CMD+=" --openai_api_key $OPENAI_API_KEY"
@@ -53,6 +52,9 @@ CMD+=" --logging.trace"
 
 # Conditionally add optional arguments
 [ -n "$AXON_PORT" ] && CMD+=" --axon.port $AXON_PORT"
+[ -n "$SUBTENSOR_CHAIN_ENDPOINT" ] && CMD+=" --subtensor.chain_endpoint $SUBTENSOR_CHAIN_ENDPOINT"
+[ -n "$BLACKLIST_FORCE_VALIDATOR_PERMIT" ] && CMD+=" --blacklist.force_validator_permit $BLACKLIST_FORCE_VALIDATOR_PERMIT"
+[ -n "$BLACKLIST_VALIDATOR_MIN_STAKE" ] && CMD+=" --blacklist.validator_min_stake $BLACKLIST_VALIDATOR_MIN_STAKE"
 
 # Execute the constructed command
 eval "$CMD"

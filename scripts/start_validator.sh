@@ -55,13 +55,13 @@ CMD="pm2 start neurons/validator.py --name $PROCESS_NAME --"
 # Add mandatory arguments
 CMD+=" --netuid $NETUID"
 CMD+=" --subtensor.network $SUBTENSOR_NETWORK"
-[ -n "$SUBTENSOR_CHAIN_ENDPOINT" ] && CMD+=" --subtensor.chain_endpoint $SUBTENSOR_CHAIN_ENDPOINT"
 CMD+=" --wallet.name $WALLET_NAME"
 CMD+=" --wallet.hotkey $WALLET_HOTKEY"
 CMD+=" --openai_api_key $OPENAI_API_KEY"
 CMD+=" --logging.debug"
 
 # Conditionally add optional arguments
+[ -n "$SUBTENSOR_CHAIN_ENDPOINT" ] && CMD+=" --subtensor.chain_endpoint $SUBTENSOR_CHAIN_ENDPOINT"
 [ -n "$WANDB_PROJECT" ] && CMD+=" --wandb.project $WANDB_PROJECT"
 [ -n "$WANDB_ENTITY" ] && CMD+=" --wandb.entity $WANDB_ENTITY"
 [ -n "$AXON_PORT" ] && CMD+=" --axon.port $AXON_PORT"
