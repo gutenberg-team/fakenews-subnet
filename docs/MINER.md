@@ -94,6 +94,10 @@ Wallet Configuration:
 API Keys:
 * `OPENAI_API_KEY` - OpenAI API key. You should provide your own paid key with access to "gpt-4o-mini" model.
 
+Blacklist Configuration:
+* `BLACKLIST_FORCE_VALIDATOR_PERMIT` - Optional, default False. Force validator permit.
+* `BLACKLIST_VALIDATOR_MIN_STAKE` - Optional, default Validator min stake.
+
 Example (look at `miner.env.example` as well):
 ```bash
 NETUID=60
@@ -103,6 +107,9 @@ AXON_PORT=8091
 WALLET_NAME=default
 WALLET_HOTKEY=default
 OPENAI_API_KEY=your_openai_api_key
+
+BLACKLIST_FORCE_VALIDATOR_PERMIT=false
+BLACKLIST_VALIDATOR_MIN_STAKE=1000
 ```
 
 ### Running
