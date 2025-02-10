@@ -31,8 +31,9 @@ The Validator is responsible for generating challenges for the Miner to solve. I
 
 #### OS dependencies
 ```bash
-apt-get update
-apt-get install -y python3.10 python3.10-venv curl gcc pkg-config make git
+sudo apt-get update
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt-get install -y python3.10 python3.10-venv curl gcc pkg-config make git npm
 ```
 
 #### Rust
@@ -44,8 +45,9 @@ rustup update stable
 
 #### PM2
 Install [PM2](https://pm2.io/docs/runtime/guide/installation/):
+
 ```bash
-apt update && apt install sudo curl && curl -sL https://raw.githubusercontent.com/Unitech/pm2/master/packager/setup.deb.sh | sudo -E bash -
+npm install pm2 -g && pm2 update
 ```
 
 ### Clone the repository
