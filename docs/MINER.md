@@ -32,8 +32,9 @@ Feel free to develop and implement your own solution. Better solutions earn grea
 
 #### OS dependencies
 ```bash
-apt-get update
-apt-get install -y python3.10 python3.10-venv curl gcc pkg-config make git
+sudo apt-get update
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt-get install -y python3.10 python3.10-venv curl gcc pkg-config make git npm
 ```
 
 #### Rust
@@ -47,10 +48,7 @@ rustup update stable
 Install [PM2](https://pm2.io/docs/runtime/guide/installation/):
 
 ```bash
-apt-get -y update && 
-apt install --assume-yes jq npm && 
-npm install pm2 -g && 
-pm2 update
+npm install pm2 -g && pm2 update
 ```
 
 Otherwise, you can try this:
