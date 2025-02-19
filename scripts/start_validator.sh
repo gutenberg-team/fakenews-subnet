@@ -58,7 +58,7 @@ CMD+=" --subtensor.network $SUBTENSOR_NETWORK"
 CMD+=" --wallet.name $WALLET_NAME"
 CMD+=" --wallet.hotkey $WALLET_HOTKEY"
 CMD+=" --openai_api_key $OPENAI_API_KEY"
-CMD+=" --logging.debug"
+CMD+=" --logging.trace"
 
 # Conditionally add optional arguments
 [ -n "$SUBTENSOR_CHAIN_ENDPOINT" ] && CMD+=" --subtensor.chain_endpoint $SUBTENSOR_CHAIN_ENDPOINT"
