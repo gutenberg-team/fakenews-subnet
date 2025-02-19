@@ -23,6 +23,7 @@ The Validator is responsible for generating challenges for the Miner to solve. I
 
 ### Prerequisites
 
+* Ubuntu 20.04
 * Python 3.10 [see](#os-dependencies)
 * Rust [see](#rust)
 * PM2 [see](#pm2)

@@ -25,6 +25,7 @@ Feel free to develop and implement your own solution. Better solutions earn grea
 
 ### Prerequisites
 
+* Ubuntu 20.04
 * Python 3.10 [see](#os-dependencies)
 * Rust [see](#rust)
 * PM2 [see](#pm2)
