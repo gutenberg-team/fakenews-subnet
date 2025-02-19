@@ -1,4 +1,4 @@
-bittensor==8.5.1
+bittensor==9.0.*
 openai==1.58.*
 scikit-learn==1.6.*
 joblib==1.4.*
