@@ -156,4 +156,4 @@ pm2 logs fakenews-miner
   - Incorrect wallet configuration | Small wallet balance.
 
 - **Contact Support**:
-- [Discord](https://discord.gg/MA5hwj2Q)
+- [Discord](https://discord.com/channels/799672011265015819/1334536801922060360)

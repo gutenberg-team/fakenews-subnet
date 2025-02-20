@@ -28,7 +28,7 @@ The Validator is responsible for generating challenges for the Miner to solve. I
 * Rust [see](#rust)
 * PM2 [see](#pm2)
 * OpenAI API key. You should provide your own paid key with access to gpt-4o-mini model. [see](#environment-variables)
-* Bittensor wallet with more than 4096 Alpha [see](#environment-variables)
+* Registered wallet with more than 4096 Stake Weight [see](#environment-variables)
 * No GPU required
 
 #### OS dependencies
@@ -88,6 +88,12 @@ API Keys:
 * `OPENAI_API_KEY` - OpenAI API key. You should provide your own paid key with access to "gpt-4o-mini" model.
 * `WANDB_API_KEY` - Optional - Wandb API key for logging.
 
+W&B configuration (Optional):
+* `WANDB_ENTITY` - The entity to log to. Default value is `gutenberg-fakenews`. Don't specify this parameter if you want to log to the default entity.
+* `WANDB_PROJECT` - The project within entity to log to. Default value is `SN66_Validator`. Don't specify this parameter if you want to log to the default project.
+
+If you don't have a W&B API key, please reach out to the Gutenberg team via Discord in subnet chat and we can provide one. 
+
 Example:
 ```bash
 NETUID=60
@@ -97,6 +103,8 @@ WALLET_NAME=default
 WALLET_HOTKEY=default
 OPENAI_API_KEY=your_openai_api_key
 WANDB_API_KEY=your_wandb_api_key
+WANDB_ENTITY=gutenberg-fakenews
+WANDB_PROJECT=SN66_Validator
 ```
 
 ### Running
@@ -148,7 +156,7 @@ pm2 logs fakenews-validator
   - Missing environment variables.
   - Provided openai api key is invalid or has no access to target model.
   - Connectivity problems.
-  - Incorrect wallet configuration | Low wallet balance.
+  - Incorrect wallet configuration | Low wallet stake.
 
 - **Contact Support**:
-- [Discord](https://discord.gg/MA5hwj2Q)
+- [Discord](https://discord.com/channels/799672011265015819/1334536801922060360)
