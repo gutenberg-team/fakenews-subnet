@@ -181,6 +181,7 @@ class BaseValidatorNeuron(BaseNeuron):
         except Exception as err:
             bt.logging.error(f"Error during validation: {err!s}")
             bt.logging.debug(str(print_exception(type(err), err, err.__traceback__)))
+            self.should_exit = True
 
     def run_in_background_thread(self):
         """
