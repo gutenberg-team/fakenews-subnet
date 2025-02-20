@@ -86,13 +86,11 @@ Wallet Configuration:
 
 API Keys:
 * `OPENAI_API_KEY` - OpenAI API key. You should provide your own paid key with access to "gpt-4o-mini" model.
-* `WANDB_API_KEY` - Optional - Wandb API key for logging.
+* `WANDB_API_KEY` - Optional - Wandb API key for logging. If you don't have a W&B API key, please reach out to the Gutenberg team via Discord in subnet chat and we can provide one to our project.
 
-W&B configuration (Optional):
-* `WANDB_ENTITY` - The entity to log to. Default value is `gutenberg-fakenews`. Don't specify this parameter if you want to log to the default entity.
-* `WANDB_PROJECT` - The project within entity to log to. Default value is `SN66_Validator`. Don't specify this parameter if you want to log to the default project.
-
-If you don't have a W&B API key, please reach out to the Gutenberg team via Discord in subnet chat and we can provide one. 
+W&B configuration:
+* `WANDB_ENTITY` - The entity to log to. If you want to log into our entity, please, specify `gutenberg-fakenews`.
+* `WANDB_PROJECT` - The project within entity to log to. If you want to log into our project, please, specify `SN66_Validator`.
 
 Example:
 ```bash
