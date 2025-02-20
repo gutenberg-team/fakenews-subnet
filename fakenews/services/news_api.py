@@ -58,4 +58,3 @@ class NewsAPIClient:
         except BaseException as e:
             bt.logging.warning(f"Error while saving dataset: {e}")
             traceback.print_exc()
-            raise e

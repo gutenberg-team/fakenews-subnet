@@ -146,10 +146,26 @@ class Miner(BaseMinerNeuron):
         bt.logging.trace(f"Prioritizing {synapse.dendrite.hotkey} with value: {priority}")
         return priority
 
+    def print_running_info(self):
+        metagraph = self.metagraph
+        self.uid = self.metagraph.hotkeys.index(
+                self.wallet.hotkey.ss58_address
+            )
+
+        log = (
+            "Miner | "
+            f"Step:{self.step} | "
+            f"UID:{self.uid} | "
+            f"Stake:{metagraph.S[self.uid]} | "
+            f"Trust:{metagraph.T[self.uid]:.4f} | "
+            f"Incentive:{metagraph.I[self.uid]:.4f} | "
+            f"Emission:{metagraph.E[self.uid]:.4f}"
+        )
+        bt.logging.info(log)
 
 # This is the main function, which runs the miner.
 if __name__ == "__main__":
     with Miner() as miner:
         while True:
-            bt.logging.info(f"Miner running... {time.time()}")
-            time.sleep(5)
+            miner.print_running_info()
+            time.sleep(20)
