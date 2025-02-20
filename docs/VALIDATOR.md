@@ -27,8 +27,9 @@ The Validator is responsible for generating challenges for the Miner to solve. I
 * Python 3.10 [see](#os-dependencies)
 * Rust [see](#rust)
 * PM2 [see](#pm2)
-* OpenAI API key. You should provide your own paid key with access to gpt-4o model. [see](#environment-variables)
-* Bittensor wallet with more than 4096 TAO [see](#environment-variables)
+* OpenAI API key. You should provide your own paid key with access to gpt-4o-mini model. [see](#environment-variables)
+* Bittensor wallet with more than 4096 Alpha [see](#environment-variables)
+* No GPU required
 
 #### OS dependencies
 ```bash
