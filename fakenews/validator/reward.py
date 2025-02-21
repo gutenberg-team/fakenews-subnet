@@ -101,6 +101,7 @@ class RewardCalculator:
                 weighted_reward = task.REWARD_WEIGHT * reward
 
                 metadata[task.TASK_NAME] = {
+                    "miner_uid": uid,
                     "probabilities": probs,
                     "normalized_probabilities": normalized_probs,
                     "metrics_long": metrics_long,
