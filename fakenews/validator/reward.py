@@ -136,7 +136,7 @@ class RewardCalculator:
             f"long term window: {cls._LONG_TERM_WINDOW}, short term window: {cls._SHORT_TERM_WINDOW}" + \
             f"Miner calculating metadata: {str(normalized_metadata).replace(' ', '')}"
 
-        max_log_length = 4000
+        max_log_length = 3950
         log_messages = []
         if len(log_message) > max_log_length:
             log_messages = [log_message[i:i + max_log_length] for i in range(0, len(log_message), max_log_length)]
