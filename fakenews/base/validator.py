@@ -83,8 +83,10 @@ class BaseValidatorNeuron(BaseNeuron):
         bt.logging.info("Building validation weights.")
         self.scores = np.zeros(self.metagraph.n, dtype=np.float32)
 
+        openai_api_key = os.environ.get("OPENAI_API_KEY")
+
         self.tasks = [
-            tasks.FakenewsDetectionWithOriginal(openai_api_key=self.config.openai_api_key, keypair=self.dendrite.keypair),
+            tasks.FakenewsDetectionWithOriginal(openai_api_key=openai_api_key, keypair=self.dendrite.keypair),
         ]
 
         self._validate_tasks()
@@ -457,6 +459,17 @@ class BaseValidatorNeuron(BaseNeuron):
         self.config.version = fakenews.__version__
         self.config.type = self.neuron_type
 
+        ignore_config_keys = [
+            "openai_api_key",
+            "signature"
+        ]
+
+        wandb_config = {}
+
+        for k, v in self.config.items():
+            if k not in ignore_config_keys:
+                wandb_config[k] = v
+
         # Initialize the wandb run for the single project
         bt.logging.info(f"Initializing W&B run")
         try:
@@ -464,7 +477,7 @@ class BaseValidatorNeuron(BaseNeuron):
                 name=run_name,
                 project=self.config.wandb.project,
                 entity=self.config.wandb.entity,
-                config=self.config,
+                config=wandb_config,
                 dir=self.config.full_path,
             )
         except wandb.Error as e:
