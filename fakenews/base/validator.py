@@ -459,17 +459,6 @@ class BaseValidatorNeuron(BaseNeuron):
         self.config.version = fakenews.__version__
         self.config.type = self.neuron_type
 
-        ignore_config_keys = [
-            "openai_api_key",
-            "signature"
-        ]
-
-        wandb_config = {}
-
-        for k, v in self.config.items():
-            if k not in ignore_config_keys:
-                wandb_config[k] = v
-
         # Initialize the wandb run for the single project
         bt.logging.info(f"Initializing W&B run")
         try:
@@ -477,7 +466,13 @@ class BaseValidatorNeuron(BaseNeuron):
                 name=run_name,
                 project=self.config.wandb.project,
                 entity=self.config.wandb.entity,
-                config=wandb_config,
+                config={
+                    "uid": self.uid,
+                    "hotkey": self.wallet.hotkey.ss58_address,
+                    "run_name": run_id,
+                    "type": "validator",
+                },
+                allow_val_change=True,
                 dir=self.config.full_path,
             )
         except wandb.Error as e:
@@ -485,11 +480,6 @@ class BaseValidatorNeuron(BaseNeuron):
             bt.logging.warning("An error occured while W&B initializing. W&B is disabled.")
             self.config.wandb.off = True
             return
-
-        # Sign the run to ensure it's from the correct hotkey
-        signature = self.wallet.hotkey.sign(self.wandb_run.id.encode()).hex()
-        self.config.signature = signature
-        wandb.config.update(self.config, allow_val_change=True)
 
         bt.logging.success(f"Started wandb run {run_name}")
 
