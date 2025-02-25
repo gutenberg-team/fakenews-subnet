@@ -412,7 +412,6 @@ class BaseValidatorNeuron(BaseNeuron):
     def save_miner_history(self):
         for task, tracker in self.performance_trackers.items():
             path = os.path.join(self.config.neuron.full_path, f"{task.TASK_NAME}_performance_history.pkl")
-            bt.logging.info(f"Saving miner performance history to {path}")
             joblib.dump(tracker, path)
 
     def load_miner_history(self):
