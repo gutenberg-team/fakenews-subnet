@@ -173,7 +173,7 @@ class BaseValidatorNeuron(BaseNeuron):
                 self.loop.run_until_complete(self.concurrent_forward())
 
                 if not self.config.wandb.off:
-                    if (dt.datetime.now() - self.wandb_run_start) >= dt.timedelta(days=1):
+                    if (dt.datetime.now() - self.wandb_run_start) >= dt.timedelta(hours=12):
                         bt.logging.info("Current wandb run is more than 1 day old. Starting a new run.")
                         self.wandb_run.finish()
                         self.init_wandb()
