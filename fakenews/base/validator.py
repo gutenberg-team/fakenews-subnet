@@ -453,11 +453,6 @@ class BaseValidatorNeuron(BaseNeuron):
         self.wandb_run_start = now
         run_id = now.strftime("%Y-%m-%d_%H-%M-%S")
         run_name = f"validator-{self.uid}-{run_id}"
-        self.config.run_name = run_name
-        self.config.uid = self.uid
-        self.config.hotkey = self.wallet.hotkey.ss58_address
-        self.config.version = fakenews.__version__
-        self.config.type = self.neuron_type
 
         # Initialize the wandb run for the single project
         bt.logging.info(f"Initializing W&B run")
@@ -469,8 +464,9 @@ class BaseValidatorNeuron(BaseNeuron):
                 config={
                     "uid": self.uid,
                     "hotkey": self.wallet.hotkey.ss58_address,
-                    "run_name": run_id,
-                    "type": "validator",
+                    "run_name": run_name,
+                    "version": fakenews.__version__,
+                    "type": self.neuron_type,
                 },
                 allow_val_change=True,
                 dir=self.config.full_path,
