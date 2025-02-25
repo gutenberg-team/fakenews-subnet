@@ -178,7 +178,7 @@ class BaseValidatorNeuron(BaseNeuron):
                 if not self.config.wandb.off:
                     if (dt.datetime.now() - self.wandb_run_start) >= dt.timedelta(hours=restart_wandb_every_hours):
                         bt.logging.info(
-                            f"Current wandb run is more than {restart_wandb_every_hours} day old. Starting a new run."
+                            f"Current wandb run is more than {restart_wandb_every_hours} hours old. Starting a new run."
                         )
                         self.wandb_run.finish()
                         self.init_wandb()
