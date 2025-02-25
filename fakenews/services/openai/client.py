@@ -17,7 +17,6 @@ class OpenAIClient(AsyncOpenAI):
         return prompt.normalize_result(result)
 
     async def _get_completions_async(self, messages: list[dict], model: str) -> str:
-        logging.debug(f"Prompt: {messages}")
         try:
             completions = await self.chat.completions.create(
                 model=model,
@@ -36,5 +35,4 @@ class OpenAIClient(AsyncOpenAI):
             logging.error(f"Failed to get completions from OpenAI: {e}")
             raise e
 
-        logging.debug(f"Response: {response}")
         return response
