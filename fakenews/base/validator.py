@@ -180,6 +180,8 @@ class BaseValidatorNeuron(BaseNeuron):
 
                 # Check if we should exit.
                 if self.should_exit:
+                    if not self.config.wandb.off:
+                        self.wandb_run.finish()
                     break
 
                 # Sync metagraph and potentially set weights.
