@@ -90,7 +90,7 @@ class RewardCalculator:
                 weighted_reward = task.REWARD_WEIGHT * reward
 
                 metadata[task.TASK_NAME] = {
-                    "miner_uid": uid,
+                    "miner_uid": int(uid),
                     "probabilities": probs,
                     "normalized_probabilities": normalized_probs,
                     "metrics_long": metrics_long,
@@ -106,11 +106,17 @@ class RewardCalculator:
             miner_rewards.append(final_reward)
             miner_rewards_calculating_metadata.append(metadata)
 
-        bt.logging.debug(
-            f"Calculating rewards for task {current_task.TASK_NAME}. Long alpha: {cls._LONG_ALPHA}, "
-            f"long term window: {cls._LONG_TERM_WINDOW}, short term window: {cls._SHORT_TERM_WINDOW}"
+        log_message = f"Calculating rewards for task {current_task.TASK_NAME}. Long alpha: {cls._LONG_ALPHA}, " + \
+            f"long term window: {cls._LONG_TERM_WINDOW}, short term window: {cls._SHORT_TERM_WINDOW}" + \
             f"Miner calculating metadata: {miner_rewards_calculating_metadata}"
-        )
+        log_messages = []
+        if len(log_message) > 4000:
+            log_messages = [log_message[i:i + 4000] for i in range(0, len(log_message), 4000)]
+        else:
+            log_messages = [log_message]
+
+        for message in log_messages:
+            bt.logging.debug(message)
 
         calculating_metadata = {
             "by_miner_details": miner_rewards_calculating_metadata,
