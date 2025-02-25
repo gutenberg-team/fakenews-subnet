@@ -75,7 +75,7 @@ async def forward(self: BaseValidatorNeuron):
         wandb_logging_context = {
             "rewards": rewards.tolist(),
             "rewards_calculating_metadata": calculating_metadata,
-            "miner_uids": miner_uids,
+            "miner_uids": miner_uids.tolist(),
             "scores": self.scores.tolist(),
             "responses": responses,
             "labels": labels,
