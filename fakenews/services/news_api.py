@@ -53,7 +53,6 @@ class NewsAPIClient:
                     self.SAVE_ARTICLES_DATASET_URL, auth=self._auth, json=dataset, timeout=ClientTimeout(3)
                 ) as response,
             ):
-                bt.logging.info(f"Response status: {response.status}")
                 response.raise_for_status()
         except BaseException as e:
             bt.logging.warning(f"Error while saving dataset: {e}")
