@@ -43,10 +43,15 @@ from fakenews.validator.performance_tracker import PerformanceTracker
 
 # Temporary solution to getting rid of annoying bittensor trace logs
 original_trace = bt.logging.trace
+
+
 def filtered_trace(message, *args, **kwargs):
     if "Unexpected header key encountered" not in message:
         original_trace(message, *args, **kwargs)
+
+
 bt.logging.trace = filtered_trace
+
 
 class BaseValidatorNeuron(BaseNeuron):
     """
@@ -168,12 +173,8 @@ class BaseValidatorNeuron(BaseNeuron):
                 self.loop.run_until_complete(self.concurrent_forward())
 
                 if not self.config.wandb.off:
-                    if (dt.datetime.now() - self.wandb_run_start) >= dt.timedelta(
-                        days=1
-                    ):
-                        bt.logging.info(
-                            "Current wandb run is more than 1 day old. Starting a new run."
-                        )
+                    if (dt.datetime.now() - self.wandb_run_start) >= dt.timedelta(days=1):
+                        bt.logging.info("Current wandb run is more than 1 day old. Starting a new run.")
                         self.wandb_run.finish()
                         self.init_wandb()
 
