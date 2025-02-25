@@ -193,6 +193,8 @@ class BaseValidatorNeuron(BaseNeuron):
             except KeyboardInterrupt:
                 self.axon.stop()
                 bt.logging.success("Validator killed by keyboard interrupt.")
+                if not self.config.wandb.off:
+                    self.wandb_run.finish()
                 sys.exit()
 
             # In case of unforeseen errors, the validator will log the error and continue operations.
