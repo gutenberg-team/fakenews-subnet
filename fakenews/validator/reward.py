@@ -122,13 +122,13 @@ class RewardCalculator:
         normalized_metadata = defaultdict(list)
         for miner_metadata in miner_rewards_calculating_metadata:
             for task_name, metadata in miner_metadata.items():
-                normalized_metadata[task_name].append = {
+                normalized_metadata[task_name].append({
                     "uid": metadata["miner_uid"],
                     "probs": metadata["probabilities"],
                     "long": metadata["metrics_long"],
                     "short": metadata["metrics_short"],
                     "wght_rwd": metadata["weighted_reward"],
-                }
+                })
 
         normalized_metadata = dict(normalized_metadata)
 
