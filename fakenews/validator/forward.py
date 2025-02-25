@@ -52,10 +52,9 @@ async def forward(self: BaseValidatorNeuron):
         deserialize=True,
         timeout=15,
     )
-    bt.logging.info(f"Responses received in {time.perf_counter() - start:.2f} seconds")
 
     # Log the results for monitoring purposes.
-    bt.logging.info(f"Received responses: {responses}")
+    bt.logging.info(f"Received responses in {time.perf_counter() - start:.2f} seconds: {responses}")
 
     # Adjust the scores based on responses from miners.
     rewards, calculating_metadata = RewardCalculator.get_rewards(
