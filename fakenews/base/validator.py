@@ -228,8 +228,6 @@ class BaseValidatorNeuron(BaseNeuron):
             self.thread.join(5)
             self.is_running = False
             bt.logging.debug("Stopped")
-            if not self.config.wandb.off:
-                self.wandb_run.finish()
 
     def __enter__(self):
         self.run_in_background_thread()
@@ -254,8 +252,6 @@ class BaseValidatorNeuron(BaseNeuron):
             self.thread.join(5)
             self.is_running = False
             bt.logging.debug("Stopped")
-            if not self.config.wandb.off:
-                self.wandb_run.finish()
 
     def set_weights(self):
         """
