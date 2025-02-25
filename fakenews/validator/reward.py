@@ -133,7 +133,7 @@ class RewardCalculator:
         normalized_metadata = dict(normalized_metadata)
 
         log_message = f"Calculating rewards for task {current_task.TASK_NAME}. Long alpha: {cls._LONG_ALPHA}, " + \
-            f"long term window: {cls._LONG_TERM_WINDOW}, short term window: {cls._SHORT_TERM_WINDOW}" + \
+            f"long term window: {cls._LONG_TERM_WINDOW}, short term window: {cls._SHORT_TERM_WINDOW}, " + \
             f"Miner calculating metadata: {str(normalized_metadata).replace(' ', '')}"
 
         max_log_length = 3950
