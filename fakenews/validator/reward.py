@@ -14,6 +14,7 @@
 # THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
+from collections import defaultdict
 import math
 from typing import Final
 
@@ -99,24 +100,13 @@ class RewardCalculator:
                     "reward_weight": task.REWARD_WEIGHT,
                     "weighted_reward": weighted_reward,
                 }
-                bt.logging.debug(f"Calculated reward: {reward}. Task weighted reward: {weighted_reward}")
 
                 final_reward += weighted_reward
 
             miner_rewards.append(final_reward)
             miner_rewards_calculating_metadata.append(metadata)
 
-        log_message = f"Calculating rewards for task {current_task.TASK_NAME}. Long alpha: {cls._LONG_ALPHA}, " + \
-            f"long term window: {cls._LONG_TERM_WINDOW}, short term window: {cls._SHORT_TERM_WINDOW}" + \
-            f"Miner calculating metadata: {miner_rewards_calculating_metadata}"
-        log_messages = []
-        if len(log_message) > 4000:
-            log_messages = [log_message[i:i + 4000] for i in range(0, len(log_message), 4000)]
-        else:
-            log_messages = [log_message]
-
-        for message in log_messages:
-            bt.logging.debug(message)
+        cls.log_result(current_task, miner_rewards_calculating_metadata)
 
         calculating_metadata = {
             "by_miner_details": miner_rewards_calculating_metadata,
@@ -126,6 +116,35 @@ class RewardCalculator:
         }
 
         return np.array(miner_rewards), calculating_metadata
+
+    @classmethod
+    def log_result(cls, current_task, miner_rewards_calculating_metadata):
+        normalized_metadata = defaultdict(list)
+        for miner_metadata in miner_rewards_calculating_metadata:
+            for task_name, metadata in miner_metadata.items():
+                normalized_metadata[task_name].append = {
+                    "uid": metadata["miner_uid"],
+                    "probs": metadata["probabilities"],
+                    "long": metadata["metrics_long"],
+                    "short": metadata["metrics_short"],
+                    "wght_rwd": metadata["weighted_reward"],
+                }
+
+        normalized_metadata = dict(normalized_metadata)
+
+        log_message = f"Calculating rewards for task {current_task.TASK_NAME}. Long alpha: {cls._LONG_ALPHA}, " + \
+            f"long term window: {cls._LONG_TERM_WINDOW}, short term window: {cls._SHORT_TERM_WINDOW}" + \
+            f"Miner calculating metadata: {normalized_metadata}"
+
+        max_log_length = 4000
+        log_messages = []
+        if len(log_message) > max_log_length:
+            log_messages = [log_message[i:i + max_log_length] for i in range(0, len(log_message), max_log_length)]
+        else:
+            log_messages = [log_message]
+
+        for message in log_messages:
+            bt.logging.debug(message)
 
     @classmethod
     def _evaluate_task_based_reward(
