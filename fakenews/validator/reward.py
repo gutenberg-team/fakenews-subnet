@@ -58,25 +58,14 @@ class RewardCalculator:
         miner_rewards = []
         miner_rewards_calculating_metadata = []
 
-        bt.logging.debug(
-            f"Calculating rewards for task {current_task.TASK_NAME}. Long alpha: {cls._LONG_ALPHA}, "
-            f"long term window: {cls._LONG_TERM_WINDOW}, short term window: {cls._SHORT_TERM_WINDOW}"
-        )
-
         for axon, uid, probs in zip(axons, uids, responses):
             metadata = {}
             hotkey = axon.hotkey
             final_reward = 0
 
-            bt.logging.debug(f"Calculating reward for miner {uid} with hotkey {hotkey}. Probabilities: {probs}")
-
             normalized_probs = cls._normalize_miner_probs(probs, labels)
 
-            if probs != normalized_probs:
-                bt.logging.warning(f"Normalized probabilities: {normalized_probs}")
-
             for task, performance_tracker in performance_trackers.items():
-                bt.logging.debug(f"Calculating reward for task {task.TASK_NAME}")
 
                 if task == current_task:
                     for normalized_score, label in zip(normalized_probs, labels):
@@ -84,7 +73,7 @@ class RewardCalculator:
 
                 tracked_hotkeys = performance_tracker.miner_hotkeys
                 if tracked_hotkeys.get(uid) != hotkey:
-                    bt.logging.info(f"Miner hotkey changed for UID {uid}. Resetting performance metrics.")
+                    bt.logging.warning(f"Miner hotkey changed for UID {uid}. Resetting performance metrics.")
                     performance_tracker.reset_miner_history(uid, hotkey)
 
                 reward = 0
@@ -117,6 +106,12 @@ class RewardCalculator:
             miner_rewards.append(final_reward)
             miner_rewards_calculating_metadata.append(metadata)
 
+        bt.logging.debug(
+            f"Calculating rewards for task {current_task.TASK_NAME}. Long alpha: {cls._LONG_ALPHA}, "
+            f"long term window: {cls._LONG_TERM_WINDOW}, short term window: {cls._SHORT_TERM_WINDOW}"
+            f"Miner calculating metadata: {miner_rewards_calculating_metadata}"
+        )
+
         calculating_metadata = {
             "by_miner_details": miner_rewards_calculating_metadata,
             "long_alpha": cls._LONG_ALPHA,
@@ -132,7 +127,6 @@ class RewardCalculator:
         metrics_long: dict[str, float],
         metrics_short: dict[str, float],
     ) -> float:
-        bt.logging.debug(f"Metrics long: {metrics_long}, metrics short: {metrics_short}")
         return cls._LONG_ALPHA * metrics_long["accuracy"] + (1 - cls._LONG_ALPHA) * metrics_short["accuracy"]
 
     @staticmethod
