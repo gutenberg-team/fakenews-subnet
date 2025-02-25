@@ -15,8 +15,6 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 import math
-from functools import partial
-from random import random
 from typing import Final
 
 import bittensor as bt
@@ -32,11 +30,6 @@ class RewardCalculator:
     )
     _LONG_TERM_WINDOW: Final[int] = 300
     _SHORT_TERM_WINDOW: Final[int] = 20
-
-    @classmethod
-    def log_detailed_reward_msg(cls, is_detailed_log_enabled: bool, message:str):  # noqa: FBT001
-        if is_detailed_log_enabled:
-            bt.logging.debug(message)
 
     @classmethod
     def get_rewards(
@@ -65,10 +58,7 @@ class RewardCalculator:
         miner_rewards = []
         miner_rewards_calculating_metadata = []
 
-        is_detailed_log_enabled = random() <= 0.05  # noqa
-        log_reward_details = partial(cls.log_detailed_reward_msg, is_detailed_log_enabled)
-
-        log_reward_details(
+        bt.logging.debug(
             f"Calculating rewards for task {current_task.TASK_NAME}. Long alpha: {cls._LONG_ALPHA}, "
             f"long term window: {cls._LONG_TERM_WINDOW}, short term window: {cls._SHORT_TERM_WINDOW}"
         )
@@ -78,15 +68,15 @@ class RewardCalculator:
             hotkey = axon.hotkey
             final_reward = 0
 
-            log_reward_details(f"Calculating reward for miner {uid} with hotkey {hotkey}. Probabilities: {probs}")
+            bt.logging.debug(f"Calculating reward for miner {uid} with hotkey {hotkey}. Probabilities: {probs}")
 
             normalized_probs = cls._normalize_miner_probs(probs, labels)
 
             if probs != normalized_probs:
-                log_reward_details(f"Normalized probabilities: {normalized_probs}")
+                bt.logging.warning(f"Normalized probabilities: {normalized_probs}")
 
             for task, performance_tracker in performance_trackers.items():
-                log_reward_details(f"Calculating reward for task {task.TASK_NAME}")
+                bt.logging.debug(f"Calculating reward for task {task.TASK_NAME}")
 
                 if task == current_task:
                     for normalized_score, label in zip(normalized_probs, labels):
@@ -94,7 +84,7 @@ class RewardCalculator:
 
                 tracked_hotkeys = performance_tracker.miner_hotkeys
                 if tracked_hotkeys.get(uid) != hotkey:
-                    bt.logging.warning(f"Miner hotkey changed for UID {uid}. Resetting performance metrics.")
+                    bt.logging.info(f"Miner hotkey changed for UID {uid}. Resetting performance metrics.")
                     performance_tracker.reset_miner_history(uid, hotkey)
 
                 reward = 0
@@ -120,7 +110,7 @@ class RewardCalculator:
                     "reward_weight": task.REWARD_WEIGHT,
                     "weighted_reward": weighted_reward,
                 }
-                log_reward_details(f"Calculated reward: {reward}. Task weighted reward: {weighted_reward}")
+                bt.logging.debug(f"Calculated reward: {reward}. Task weighted reward: {weighted_reward}")
 
                 final_reward += weighted_reward
 
