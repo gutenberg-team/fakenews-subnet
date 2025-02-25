@@ -14,6 +14,7 @@
 # THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
+from collections import defaultdict
 import math
 from typing import Final
 
@@ -58,25 +59,14 @@ class RewardCalculator:
         miner_rewards = []
         miner_rewards_calculating_metadata = []
 
-        bt.logging.debug(
-            f"Calculating rewards for task {current_task.TASK_NAME}. Long alpha: {cls._LONG_ALPHA}, "
-            f"long term window: {cls._LONG_TERM_WINDOW}, short term window: {cls._SHORT_TERM_WINDOW}"
-        )
-
         for axon, uid, probs in zip(axons, uids, responses):
             metadata = {}
             hotkey = axon.hotkey
             final_reward = 0
 
-            bt.logging.debug(f"Calculating reward for miner {uid} with hotkey {hotkey}. Probabilities: {probs}")
-
             normalized_probs = cls._normalize_miner_probs(probs, labels)
 
-            if probs != normalized_probs:
-                bt.logging.warning(f"Normalized probabilities: {normalized_probs}")
-
             for task, performance_tracker in performance_trackers.items():
-                bt.logging.debug(f"Calculating reward for task {task.TASK_NAME}")
 
                 if task == current_task:
                     for normalized_score, label in zip(normalized_probs, labels):
@@ -84,7 +74,7 @@ class RewardCalculator:
 
                 tracked_hotkeys = performance_tracker.miner_hotkeys
                 if tracked_hotkeys.get(uid) != hotkey:
-                    bt.logging.info(f"Miner hotkey changed for UID {uid}. Resetting performance metrics.")
+                    bt.logging.warning(f"Miner hotkey changed for UID {uid}. Resetting performance metrics.")
                     performance_tracker.reset_miner_history(uid, hotkey)
 
                 reward = 0
@@ -101,7 +91,7 @@ class RewardCalculator:
                 weighted_reward = task.REWARD_WEIGHT * reward
 
                 metadata[task.TASK_NAME] = {
-                    "miner_uid": uid,
+                    "miner_uid": int(uid),
                     "probabilities": probs,
                     "normalized_probabilities": normalized_probs,
                     "metrics_long": metrics_long,
@@ -110,12 +100,13 @@ class RewardCalculator:
                     "reward_weight": task.REWARD_WEIGHT,
                     "weighted_reward": weighted_reward,
                 }
-                bt.logging.debug(f"Calculated reward: {reward}. Task weighted reward: {weighted_reward}")
 
                 final_reward += weighted_reward
 
             miner_rewards.append(final_reward)
             miner_rewards_calculating_metadata.append(metadata)
+
+        cls.log_result(current_task, miner_rewards_calculating_metadata)
 
         calculating_metadata = {
             "by_miner_details": miner_rewards_calculating_metadata,
@@ -127,12 +118,40 @@ class RewardCalculator:
         return np.array(miner_rewards), calculating_metadata
 
     @classmethod
+    def log_result(cls, current_task, miner_rewards_calculating_metadata):
+        normalized_metadata = defaultdict(list)
+        for miner_metadata in miner_rewards_calculating_metadata:
+            for task_name, metadata in miner_metadata.items():
+                normalized_metadata[task_name].append({
+                    "uid": metadata["miner_uid"],
+                    "probs": metadata["probabilities"],
+                    "long": metadata["metrics_long"],
+                    "short": metadata["metrics_short"],
+                    "wght_rwd": metadata["weighted_reward"],
+                })
+
+        normalized_metadata = dict(normalized_metadata)
+
+        log_message = f"Calculating rewards for task {current_task.TASK_NAME}. Long alpha: {cls._LONG_ALPHA}, " + \
+            f"long term window: {cls._LONG_TERM_WINDOW}, short term window: {cls._SHORT_TERM_WINDOW}, " + \
+            f"Miner calculating metadata: {str(normalized_metadata).replace(' ', '')}"
+
+        max_log_length = 3950
+        log_messages = []
+        if len(log_message) > max_log_length:
+            log_messages = [log_message[i:i + max_log_length] for i in range(0, len(log_message), max_log_length)]
+        else:
+            log_messages = [log_message]
+
+        for message in log_messages:
+            bt.logging.debug(message)
+
+    @classmethod
     def _evaluate_task_based_reward(
         cls,
         metrics_long: dict[str, float],
         metrics_short: dict[str, float],
     ) -> float:
-        bt.logging.debug(f"Metrics long: {metrics_long}, metrics short: {metrics_short}")
         return cls._LONG_ALPHA * metrics_long["accuracy"] + (1 - cls._LONG_ALPHA) * metrics_short["accuracy"]
 
     @staticmethod

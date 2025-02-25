@@ -29,7 +29,7 @@ from fakenews.validator.task import ValidatorTask, select_task
 
 async def forward(self: BaseValidatorNeuron):
     miner_uids = uids.get_random_uids(self, k=self.config.neuron.sample_size)
-    bt.logging.info(f"Miners: {miner_uids}")
+    bt.logging.info(f"Miners: {miner_uids.tolist()}")
     axons = [self.metagraph.axons[uid] for uid in miner_uids]
 
     if len(miner_uids) == 0:
@@ -52,10 +52,9 @@ async def forward(self: BaseValidatorNeuron):
         deserialize=True,
         timeout=15,
     )
-    bt.logging.info(f"Responses received in {time.perf_counter() - start:.2f} seconds")
 
     # Log the results for monitoring purposes.
-    bt.logging.info(f"Received responses: {responses}")
+    bt.logging.info(f"Received responses in {time.perf_counter() - start:.2f} seconds: {responses}")
 
     # Adjust the scores based on responses from miners.
     rewards, calculating_metadata = RewardCalculator.get_rewards(
@@ -67,7 +66,7 @@ async def forward(self: BaseValidatorNeuron):
         current_task=task,
     )
 
-    bt.logging.info(f"Scored responses: {rewards}")
+    bt.logging.info(f"Scored responses: {rewards.tolist()}")
 
     self.update_scores(rewards, miner_uids)
     self.save_miner_history()
@@ -76,7 +75,8 @@ async def forward(self: BaseValidatorNeuron):
         wandb_logging_context = {
             "rewards": rewards.tolist(),
             "rewards_calculating_metadata": calculating_metadata,
-            "scores": self.scores,
+            "miner_uids": miner_uids.tolist(),
+            "scores": self.scores.tolist(),
             "responses": responses,
             "labels": labels,
             "task_metadata": task.metadata(),

@@ -57,7 +57,6 @@ CMD+=" --netuid $NETUID"
 CMD+=" --subtensor.network $SUBTENSOR_NETWORK"
 CMD+=" --wallet.name $WALLET_NAME"
 CMD+=" --wallet.hotkey $WALLET_HOTKEY"
-CMD+=" --openai_api_key $OPENAI_API_KEY"
 CMD+=" --logging.trace"
 
 # Conditionally add optional arguments

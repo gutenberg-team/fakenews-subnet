@@ -19,6 +19,7 @@
 import argparse
 import asyncio
 import copy
+import datetime as dt
 import os
 import sys
 import threading
@@ -39,6 +40,17 @@ from fakenews.mock import MockDendrite
 from fakenews.utils.config import add_validator_args
 from fakenews.validator import task as tasks
 from fakenews.validator.performance_tracker import PerformanceTracker
+
+# Temporary solution to getting rid of annoying bittensor trace logs
+original_trace = bt.logging.trace
+
+
+def filtered_trace(message, *args, **kwargs):
+    if "Unexpected header key encountered" not in message:
+        original_trace(message, *args, **kwargs)
+
+
+bt.logging.trace = filtered_trace
 
 
 class BaseValidatorNeuron(BaseNeuron):
@@ -71,8 +83,10 @@ class BaseValidatorNeuron(BaseNeuron):
         bt.logging.info("Building validation weights.")
         self.scores = np.zeros(self.metagraph.n, dtype=np.float32)
 
+        openai_api_key = os.environ.get("OPENAI_API_KEY")
+
         self.tasks = [
-            tasks.FakenewsDetectionWithOriginal(openai_api_key=self.config.openai_api_key, keypair=self.dendrite.keypair),
+            tasks.FakenewsDetectionWithOriginal(openai_api_key=openai_api_key, keypair=self.dendrite.keypair),
         ]
 
         self._validate_tasks()
@@ -150,6 +164,7 @@ class BaseValidatorNeuron(BaseNeuron):
         # Check that validator is registered on the network.
         self.sync()
 
+        restart_wandb_every_hours = 12
         bt.logging.info(f"Validator starting at block: {self.block}")
 
         # This loop maintains the validator's operations until intentionally stopped.
@@ -160,8 +175,18 @@ class BaseValidatorNeuron(BaseNeuron):
                 # Run multiple forwards concurrently.
                 self.loop.run_until_complete(self.concurrent_forward())
 
+                if not self.config.wandb.off:
+                    if (dt.datetime.now() - self.wandb_run_start) >= dt.timedelta(hours=restart_wandb_every_hours):
+                        bt.logging.info(
+                            f"Current wandb run is more than {restart_wandb_every_hours} hours old. Starting a new run."
+                        )
+                        self.wandb_run.finish()
+                        self.init_wandb()
+
                 # Check if we should exit.
                 if self.should_exit:
+                    if not self.config.wandb.off:
+                        self.wandb_run.finish()
                     break
 
                 # Sync metagraph and potentially set weights.
@@ -175,6 +200,8 @@ class BaseValidatorNeuron(BaseNeuron):
             except KeyboardInterrupt:
                 self.axon.stop()
                 bt.logging.success("Validator killed by keyboard interrupt.")
+                if not self.config.wandb.off:
+                    self.wandb_run.finish()
                 sys.exit()
 
             # In case of unforeseen errors, the validator will log the error and continue operations.
@@ -256,7 +283,7 @@ class BaseValidatorNeuron(BaseNeuron):
         # Compute raw_weights safely
         raw_weights = self.scores / norm
 
-        bt.logging.debug("raw_weights", raw_weights)
+        bt.logging.debug("raw_weights", raw_weights.tolist())
         bt.logging.debug("raw_weight_uids", str(self.metagraph.uids.tolist()))
         # Process the raw weights to final_weights via subtensor limitations.
         (
@@ -269,8 +296,8 @@ class BaseValidatorNeuron(BaseNeuron):
             subtensor=self.subtensor,
             metagraph=self.metagraph,
         )
-        bt.logging.debug("processed_weights", processed_weights)
-        bt.logging.debug("processed_weight_uids", processed_weight_uids)
+        bt.logging.debug("processed_weights", processed_weights.tolist())
+        bt.logging.debug("processed_weight_uids", processed_weight_uids.tolist())
 
         # Convert to uint16 weights and uids.
         (
@@ -344,7 +371,7 @@ class BaseValidatorNeuron(BaseNeuron):
 
         # Handle edge case: If either rewards or uids_array is empty.
         if rewards.size == 0 or uids_array.size == 0:
-            bt.logging.info(f"rewards: {rewards}, uids_array: {uids_array}")
+            bt.logging.info(f"rewards: {rewards.tolist()}, uids_array: {uids_array.tolist()}")
             bt.logging.warning("Either rewards or uids_array is empty. No updates will be performed.")
             return
 
@@ -358,12 +385,12 @@ class BaseValidatorNeuron(BaseNeuron):
         # Compute forward pass rewards, assumes uids are mutually exclusive.
         scattered_rewards: np.ndarray = np.zeros_like(self.scores)
         scattered_rewards[uids_array] = rewards
-        bt.logging.debug(f"Scattered rewards: {rewards}")
+        bt.logging.debug(f"Scattered rewards: {rewards.tolist()}")
 
         # Update scores with rewards produced by this step.
         alpha: float = self.config.neuron.moving_average_alpha
         self.scores: np.ndarray = alpha * scattered_rewards + (1 - alpha) * self.scores
-        bt.logging.debug(f"Updated moving avg scores: {self.scores}")
+        bt.logging.debug(f"Updated moving avg scores: {self.scores.tolist()}")
 
     def save_state(self):
         """Saves the state of the validator to a file."""
@@ -392,7 +419,6 @@ class BaseValidatorNeuron(BaseNeuron):
     def save_miner_history(self):
         for task, tracker in self.performance_trackers.items():
             path = os.path.join(self.config.neuron.full_path, f"{task.TASK_NAME}_performance_history.pkl")
-            bt.logging.info(f"Saving miner performance history to {path}")
             joblib.dump(tracker, path)
 
     def load_miner_history(self):
@@ -426,34 +452,33 @@ class BaseValidatorNeuron(BaseNeuron):
         if self.config.wandb.off:
             return
 
-        run_name = f"validator-{self.uid}-{fakenews.__version__}"
-        self.config.run_name = run_name
-        self.config.uid = self.uid
-        self.config.hotkey = self.wallet.hotkey.ss58_address
-        self.config.version = fakenews.__version__
-        self.config.type = self.neuron_type
+        now = dt.datetime.now()
+        self.wandb_run_start = now
+        run_id = now.strftime("%Y-%m-%d_%H-%M-%S")
+        run_name = f"validator-{self.uid}-{run_id}"
 
         # Initialize the wandb run for the single project
         bt.logging.info(f"Initializing W&B run")
         try:
-            run = wandb.init(
+            self.wandb_run = wandb.init(
                 name=run_name,
                 project=self.config.wandb.project,
                 entity=self.config.wandb.entity,
-                config=self.config,
+                config={
+                    "uid": self.uid,
+                    "hotkey": self.wallet.hotkey.ss58_address,
+                    "run_name": run_name,
+                    "version": fakenews.__version__,
+                    "type": self.neuron_type,
+                },
+                allow_val_change=True,
                 dir=self.config.full_path,
-                reinit=True,
             )
         except wandb.Error as e:
             bt.logging.warning(e)
             bt.logging.warning("An error occured while W&B initializing. W&B is disabled.")
             self.config.wandb.off = True
             return
-
-        # Sign the run to ensure it's from the correct hotkey
-        signature = self.wallet.hotkey.sign(run.id.encode()).hex()
-        self.config.signature = signature
-        wandb.config.update(self.config, allow_val_change=True)
 
         bt.logging.success(f"Started wandb run {run_name}")
 
