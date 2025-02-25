@@ -180,6 +180,8 @@ class BaseValidatorNeuron(BaseNeuron):
 
                 # Check if we should exit.
                 if self.should_exit:
+                    if not self.config.wandb.off:
+                        self.wandb_run.finish()
                     break
 
                 # Sync metagraph and potentially set weights.
@@ -226,6 +228,8 @@ class BaseValidatorNeuron(BaseNeuron):
             self.thread.join(5)
             self.is_running = False
             bt.logging.debug("Stopped")
+            if not self.config.wandb.off:
+                self.wandb_run.finish()
 
     def __enter__(self):
         self.run_in_background_thread()
@@ -250,6 +254,8 @@ class BaseValidatorNeuron(BaseNeuron):
             self.thread.join(5)
             self.is_running = False
             bt.logging.debug("Stopped")
+            if not self.config.wandb.off:
+                self.wandb_run.finish()
 
     def set_weights(self):
         """
@@ -276,7 +282,7 @@ class BaseValidatorNeuron(BaseNeuron):
         # Compute raw_weights safely
         raw_weights = self.scores / norm
 
-        bt.logging.debug("raw_weights", raw_weights)
+        bt.logging.debug("raw_weights", raw_weights.tolist())
         bt.logging.debug("raw_weight_uids", str(self.metagraph.uids.tolist()))
         # Process the raw weights to final_weights via subtensor limitations.
         (
@@ -289,8 +295,8 @@ class BaseValidatorNeuron(BaseNeuron):
             subtensor=self.subtensor,
             metagraph=self.metagraph,
         )
-        bt.logging.debug("processed_weights", processed_weights)
-        bt.logging.debug("processed_weight_uids", processed_weight_uids)
+        bt.logging.debug("processed_weights", processed_weights.tolist())
+        bt.logging.debug("processed_weight_uids", processed_weight_uids.tolist())
 
         # Convert to uint16 weights and uids.
         (
@@ -364,7 +370,7 @@ class BaseValidatorNeuron(BaseNeuron):
 
         # Handle edge case: If either rewards or uids_array is empty.
         if rewards.size == 0 or uids_array.size == 0:
-            bt.logging.info(f"rewards: {rewards}, uids_array: {uids_array}")
+            bt.logging.info(f"rewards: {rewards.tolist()}, uids_array: {uids_array.tolist()}")
             bt.logging.warning("Either rewards or uids_array is empty. No updates will be performed.")
             return
 
@@ -378,12 +384,12 @@ class BaseValidatorNeuron(BaseNeuron):
         # Compute forward pass rewards, assumes uids are mutually exclusive.
         scattered_rewards: np.ndarray = np.zeros_like(self.scores)
         scattered_rewards[uids_array] = rewards
-        bt.logging.debug(f"Scattered rewards: {rewards}")
+        bt.logging.debug(f"Scattered rewards: {rewards.tolist()}")
 
         # Update scores with rewards produced by this step.
         alpha: float = self.config.neuron.moving_average_alpha
         self.scores: np.ndarray = alpha * scattered_rewards + (1 - alpha) * self.scores
-        bt.logging.debug(f"Updated moving avg scores: {self.scores}")
+        bt.logging.debug(f"Updated moving avg scores: {self.scores.tolist()}")
 
     def save_state(self):
         """Saves the state of the validator to a file."""
@@ -412,7 +418,6 @@ class BaseValidatorNeuron(BaseNeuron):
     def save_miner_history(self):
         for task, tracker in self.performance_trackers.items():
             path = os.path.join(self.config.neuron.full_path, f"{task.TASK_NAME}_performance_history.pkl")
-            bt.logging.info(f"Saving miner performance history to {path}")
             joblib.dump(tracker, path)
 
     def load_miner_history(self):
