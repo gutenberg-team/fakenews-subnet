@@ -278,7 +278,7 @@ class BaseValidatorNeuron(BaseNeuron):
         # Compute raw_weights safely
         raw_weights = self.scores / norm
 
-        bt.logging.debug("raw_weights", raw_weights)
+        bt.logging.debug("raw_weights", raw_weights.tolist())
         bt.logging.debug("raw_weight_uids", str(self.metagraph.uids.tolist()))
         # Process the raw weights to final_weights via subtensor limitations.
         (
@@ -291,8 +291,8 @@ class BaseValidatorNeuron(BaseNeuron):
             subtensor=self.subtensor,
             metagraph=self.metagraph,
         )
-        bt.logging.debug("processed_weights", processed_weights)
-        bt.logging.debug("processed_weight_uids", processed_weight_uids)
+        bt.logging.debug("processed_weights", processed_weights.tolist())
+        bt.logging.debug("processed_weight_uids", processed_weight_uids.tolist())
 
         # Convert to uint16 weights and uids.
         (
@@ -385,7 +385,7 @@ class BaseValidatorNeuron(BaseNeuron):
         # Update scores with rewards produced by this step.
         alpha: float = self.config.neuron.moving_average_alpha
         self.scores: np.ndarray = alpha * scattered_rewards + (1 - alpha) * self.scores
-        bt.logging.debug(f"Updated moving avg scores: {self.scores}")
+        bt.logging.debug(f"Updated moving avg scores: {self.scores.tolist()}")
 
     def save_state(self):
         """Saves the state of the validator to a file."""

@@ -70,10 +70,10 @@ def convert_weights_and_uids_for_emit(uids: np.ndarray, weights: np.ndarray) -> 
     non_zero_weight_uids = uids[weights > 0]
 
     # Debugging information
-    bittensor.logging.debug(f"weights: {weights}")
-    bittensor.logging.debug(f"non_zero_weights: {non_zero_weights}")
-    bittensor.logging.debug(f"uids: {uids}")
-    bittensor.logging.debug(f"non_zero_weight_uids: {non_zero_weight_uids}")
+    bittensor.logging.debug(f"weights: {weights.tolist()}")
+    bittensor.logging.debug(f"non_zero_weights: {non_zero_weights.tolist()}")
+    bittensor.logging.debug(f"uids: {uids.tolist()}")
+    bittensor.logging.debug(f"non_zero_weight_uids: {non_zero_weight_uids.tolist()}")
 
     if np.min(weights) < 0:
         raise ValueError("Passed weight is negative cannot exist on chain {}".format(weights))
@@ -123,7 +123,7 @@ def process_weights_for_netuid(
     tuple[Any, ndarray],
 ]:
     bittensor.logging.debug("process_weights_for_netuid()")
-    bittensor.logging.debug("weights", weights)
+    bittensor.logging.debug("weights", weights.tolist())
     bittensor.logging.debug("netuid", netuid)
     bittensor.logging.debug("subtensor", subtensor)
     bittensor.logging.debug("metagraph", metagraph)
