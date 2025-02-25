@@ -19,6 +19,7 @@
 import argparse
 import asyncio
 import copy
+import datetime as dt
 import os
 import sys
 import threading
@@ -39,6 +40,17 @@ from fakenews.mock import MockDendrite
 from fakenews.utils.config import add_validator_args
 from fakenews.validator import task as tasks
 from fakenews.validator.performance_tracker import PerformanceTracker
+
+# Temporary solution to getting rid of annoying bittensor trace logs
+original_trace = bt.logging.trace
+
+
+def filtered_trace(message, *args, **kwargs):
+    if "Unexpected header key encountered" not in message:
+        original_trace(message, *args, **kwargs)
+
+
+bt.logging.trace = filtered_trace
 
 
 class BaseValidatorNeuron(BaseNeuron):
@@ -159,6 +171,12 @@ class BaseValidatorNeuron(BaseNeuron):
 
                 # Run multiple forwards concurrently.
                 self.loop.run_until_complete(self.concurrent_forward())
+
+                if not self.config.wandb.off:
+                    if (dt.datetime.now() - self.wandb_run_start) >= dt.timedelta(days=1):
+                        bt.logging.info("Current wandb run is more than 1 day old. Starting a new run.")
+                        self.wandb_run.finish()
+                        self.init_wandb()
 
                 # Check if we should exit.
                 if self.should_exit:
@@ -426,7 +444,10 @@ class BaseValidatorNeuron(BaseNeuron):
         if self.config.wandb.off:
             return
 
-        run_name = f"validator-{self.uid}-{fakenews.__version__}"
+        now = dt.datetime.now()
+        self.wandb_run_start = now
+        run_id = now.strftime("%Y-%m-%d_%H-%M-%S")
+        run_name = f"validator-{self.uid}-{run_id}"
         self.config.run_name = run_name
         self.config.uid = self.uid
         self.config.hotkey = self.wallet.hotkey.ss58_address
@@ -436,13 +457,12 @@ class BaseValidatorNeuron(BaseNeuron):
         # Initialize the wandb run for the single project
         bt.logging.info(f"Initializing W&B run")
         try:
-            run = wandb.init(
+            self.wandb_run = wandb.init(
                 name=run_name,
                 project=self.config.wandb.project,
                 entity=self.config.wandb.entity,
                 config=self.config,
                 dir=self.config.full_path,
-                reinit=True,
             )
         except wandb.Error as e:
             bt.logging.warning(e)
@@ -451,7 +471,7 @@ class BaseValidatorNeuron(BaseNeuron):
             return
 
         # Sign the run to ensure it's from the correct hotkey
-        signature = self.wallet.hotkey.sign(run.id.encode()).hex()
+        signature = self.wallet.hotkey.sign(self.wandb_run.id.encode()).hex()
         self.config.signature = signature
         wandb.config.update(self.config, allow_val_change=True)
 

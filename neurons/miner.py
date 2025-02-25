@@ -148,9 +148,7 @@ class Miner(BaseMinerNeuron):
 
     def print_running_info(self):
         metagraph = self.metagraph
-        self.uid = self.metagraph.hotkeys.index(
-                self.wallet.hotkey.ss58_address
-            )
+        self.uid = self.metagraph.hotkeys.index(self.wallet.hotkey.ss58_address)
 
         log = (
             "Miner | "
@@ -162,6 +160,7 @@ class Miner(BaseMinerNeuron):
             f"Emission:{metagraph.E[self.uid]:.4f}"
         )
         bt.logging.info(log)
+
 
 # This is the main function, which runs the miner.
 if __name__ == "__main__":
