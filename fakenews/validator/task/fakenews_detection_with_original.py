@@ -11,7 +11,13 @@ from fakenews.protocol import ArticleSynapse
 from fakenews.schemas import SaveLLMRewrittenArticleModel
 from fakenews.services.news_api import NewsAPIClient
 from fakenews.services.openai.client import OpenAIClient
-from fakenews.services.openai.prompts import StrongOriginalV5Prompt, ValidatorPrompt, WeakFakeV4Prompt
+from fakenews.services.openai.prompts import (
+    StrongFakeV1Prompt,
+    StrongOriginalV5Prompt,
+    ValidatorPrompt,
+    WeakFakeV4Prompt,
+    WeakOriginalV1Prompt,
+)
 
 from . import ValidatorTask
 
@@ -57,9 +63,19 @@ class FakenewsDetectionWithOriginal(ValidatorTask):
     TASK_NAME: str = "FakenewsDetectionWithOriginal"
     REWARD_WEIGHT: float = 1.0
     FORWARD_PROBABILTY: float = 1.0
-    PROMPT_SAMPLING_PROBABILITIES: ClassVar[list[tuple[ValidatorPrompt, float]]] = [
+    FAKE_SAMPLING_PROBABILITIES: ClassVar[list[tuple[ValidatorPrompt, float]]] = [
         (WeakFakeV4Prompt, 0.5),
+        (StrongFakeV1Prompt, 0.5),
+    ]
+    PARAPHRASE_SAMPLING_PROBABILITIES: ClassVar[list[tuple[ValidatorPrompt, float]]] = [
+        (WeakOriginalV1Prompt, 0.5),
         (StrongOriginalV5Prompt, 0.5),
+    ]
+    PROMPT_SAMPLING_PROBABILITIES: ClassVar[list[tuple[ValidatorPrompt, float]]] = [
+        (WeakFakeV4Prompt, 0.3),
+        (StrongFakeV1Prompt, 0.3),
+        (StrongOriginalV5Prompt, 0.2),
+        (WeakOriginalV1Prompt, 0.2),
     ]
     ALLOW_PROMPTS_REPEAT: bool = False
     PROMPTS_SAMPLE_SIZE: int = 2
@@ -90,10 +106,10 @@ class FakenewsDetectionWithOriginal(ValidatorTask):
         original_article = await self._news_api_client.fetch_article()
 
         article_text = original_article.body
-        log_article = article_text.replace('\n', ' ')
+        log_article = article_text.replace("\n", " ")
         bt.logging.debug(f"Original article url: {original_article.url}, text: {log_article}")
 
-        prompts = [p(article_text) for p in self._select_sampled_prompts()]
+        prompts = [p(article_text) for p in self._select_sampled_prompts_1_fake_1_original()]
 
         try:
             results = await asyncio.gather(*(self._openai_client.get_prompt_completions_async(p) for p in prompts))
@@ -174,4 +190,19 @@ class FakenewsDetectionWithOriginal(ValidatorTask):
                 prompts.pop(index)
                 sample_rates.pop(index)
 
+        return sampled_prompts
+
+    def _select_sampled_prompts_1_fake_1_original(self) -> list[ValidatorPrompt]:
+        sampled_prompts = []
+
+        fake_prompts = [p for p, _ in self.FAKE_SAMPLING_PROBABILITIES]
+        fake_sample_rates = [r for _, r in self.FAKE_SAMPLING_PROBABILITIES]
+
+        paraphrase_prompts = [p for p, _ in self.PARAPHRASE_SAMPLING_PROBABILITIES]
+        paraphrase_sample_rates = [r for _, r in self.PARAPHRASE_SAMPLING_PROBABILITIES]
+
+        sampled_prompts.append(choices(fake_prompts, weights=fake_sample_rates, k=1)[0])  # noqa: S311
+        sampled_prompts.append(choices(paraphrase_prompts, weights=paraphrase_sample_rates, k=1)[0])  # noqa: S311
+
+        shuffle(sampled_prompts)
         return sampled_prompts
