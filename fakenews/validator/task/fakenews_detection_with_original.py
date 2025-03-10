@@ -64,12 +64,12 @@ class FakenewsDetectionWithOriginal(ValidatorTask):
     REWARD_WEIGHT: float = 1.0
     FORWARD_PROBABILTY: float = 1.0
     FAKE_SAMPLING_PROBABILITIES: ClassVar[list[tuple[ValidatorPrompt, float]]] = [
-        (WeakFakeV4Prompt, 0.5),
-        (StrongFakeV1Prompt, 0.5),
+        (WeakFakeV4Prompt, 0.6),
+        (StrongFakeV1Prompt, 0.4),
     ]
     PARAPHRASE_SAMPLING_PROBABILITIES: ClassVar[list[tuple[ValidatorPrompt, float]]] = [
-        (WeakOriginalV1Prompt, 0.5),
-        (StrongOriginalV5Prompt, 0.5),
+        (WeakOriginalV1Prompt, 0.4),
+        (StrongOriginalV5Prompt, 0.6),
     ]
     PROMPT_SAMPLING_PROBABILITIES: ClassVar[list[tuple[ValidatorPrompt, float]]] = [
         (WeakFakeV4Prompt, 0.3),
