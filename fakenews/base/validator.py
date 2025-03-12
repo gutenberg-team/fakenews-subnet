@@ -35,6 +35,7 @@ import wandb
 import fakenews
 from fakenews.base.neuron import BaseNeuron
 from fakenews.base.utils.weight_utils import convert_weights_and_uids_for_emit, process_weights_for_netuid
+from fakenews.base.utils.min_miners_alpha import calculate_minimum_miner_alpha
 from fakenews.exceptions import TaskDefinitionError
 from fakenews.mock import MockDendrite
 from fakenews.utils.config import add_validator_args
@@ -92,7 +93,7 @@ class BaseValidatorNeuron(BaseNeuron):
         self._validate_tasks()
 
         self.performance_trackers = {t: None for t in self.tasks}
-        self.load_miner_history()
+        self.load_state()
 
         self.init_wandb()
 
@@ -351,6 +352,22 @@ class BaseValidatorNeuron(BaseNeuron):
             new_moving_average[:min_len] = self.scores[:min_len]
             self.scores = new_moving_average
 
+        self.has_enough_stake = np.zeros(len(self.hotkeys), dtype=np.float32)
+
+        coldkey_stake = {}
+        #  Consider that several hotkeys can be associated with the same coldkey.
+        for coldkey in np.unique(self.metagraph.coldkeys):
+            coldkey_stake[coldkey] = 0
+            for hotkey_stake in self.subtensor.get_stake_for_coldkey(coldkey):
+                coldkey_stake[coldkey] += hotkey_stake.stake.tao if hotkey_stake.netuid == self.config.netuid else 0
+
+        min_miner_alpha = calculate_minimum_miner_alpha(self.metagraph)
+        bt.logging.info(f"min_miner_alpha: {min_miner_alpha}")
+
+        for i, coldkey in enumerate(self.metagraph.coldkeys):
+            self.has_enough_stake[i] = coldkey_stake[coldkey] - min_miner_alpha >= 0
+            coldkey_stake[coldkey] -= min_miner_alpha
+
         # Update the hotkeys.
         self.hotkeys = copy.deepcopy(self.metagraph.hotkeys)
 
@@ -381,6 +398,9 @@ class BaseValidatorNeuron(BaseNeuron):
                 f"Shape mismatch: rewards array of shape {rewards.shape} "
                 f"cannot be broadcast to uids array of shape {uids_array.shape}"
             )
+
+        rewards = rewards * self.has_enough_stake[uids_array]
+        bt.logging.debug(f"Rewards after considering minimum miner alpha amount: {rewards}")
 
         # Update scores with rewards produced by this step.
         alpha: float = self.config.neuron.moving_average_alpha
