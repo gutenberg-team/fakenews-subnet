@@ -97,6 +97,7 @@ class BaseValidatorNeuron(BaseNeuron):
 
         self.init_wandb()
 
+        self.last_metagraph_update_dt = None
         # Init sync with the network. Updates the metagraph.
         self.sync()
 
@@ -324,6 +325,11 @@ class BaseValidatorNeuron(BaseNeuron):
             bt.logging.error("set_weights failed", msg)
 
     def resync_metagraph(self):
+        now = dt.datetime.now(tz=dt.timezone.utc)
+        if self.last_metagraph_update_dt is not None and (now -
+            self.last_metagraph_update_dt) < dt.timedelta(seconds=self.config.neuron.epoch_length * 12):
+            return
+
         """Resyncs the metagraph and updates the hotkeys and moving averages based on the new metagraph."""
         bt.logging.info("resync_metagraph()")
 
@@ -361,7 +367,7 @@ class BaseValidatorNeuron(BaseNeuron):
             for hotkey_stake in self.subtensor.get_stake_for_coldkey(coldkey):
                 coldkey_stake[coldkey] += hotkey_stake.stake.tao if hotkey_stake.netuid == self.config.netuid else 0
 
-        min_miner_alpha = calculate_minimum_miner_alpha(self.metagraph)
+        min_miner_alpha = calculate_minimum_miner_alpha()
         bt.logging.info(f"min_miner_alpha: {min_miner_alpha}")
 
         for i, coldkey in enumerate(self.metagraph.coldkeys):
@@ -370,6 +376,7 @@ class BaseValidatorNeuron(BaseNeuron):
 
         # Update the hotkeys.
         self.hotkeys = copy.deepcopy(self.metagraph.hotkeys)
+        self.last_metagraph_update_dt = now
 
     def update_scores(self, rewards: np.ndarray, uids: List[int]):
         """Performs exponential moving average on the scores based on the rewards received from the miners."""
