@@ -94,11 +94,9 @@ class BaseValidatorNeuron(BaseNeuron):
 
         self.performance_trackers = {t: None for t in self.tasks}
         self.load_state()
-
         self.init_wandb()
 
         self.last_metagraph_update_dt = None
-        self.has_enough_stake = None
         # Init sync with the network. Updates the metagraph.
         self.sync()
 
@@ -415,9 +413,8 @@ class BaseValidatorNeuron(BaseNeuron):
                 f"cannot be broadcast to uids array of shape {uids_array.shape}"
             )
 
-        if self.has_enough_stake is not None:
-            rewards = rewards * self.has_enough_stake[uids_array]
-            bt.logging.debug(f"Rewards after considering minimum miner alpha amount: {rewards}")
+        rewards = rewards * self.has_enough_stake[uids_array]
+        bt.logging.debug(f"Rewards after considering minimum miner alpha amount: {rewards}")
 
         # Update scores with rewards produced by this step.
         alpha: float = self.config.neuron.moving_average_alpha
@@ -448,8 +445,10 @@ class BaseValidatorNeuron(BaseNeuron):
         self.scores = state["scores"]
         self.hotkeys = state["hotkeys"]
 
-        if "has_enough_stake" in state.files:
+        if "has_enough_stake" in state.files:  # Backward compatibility
             self.has_enough_stake = state["has_enough_stake"]
+        else:
+            self.has_enough_stake = np.ones(len(self.hotkeys), dtype=np.float32)
 
         self.load_miner_history()
 
