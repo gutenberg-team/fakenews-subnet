@@ -4,4 +4,3 @@ scikit-learn==1.6.*
 joblib==1.4.*
 wandb==0.19.*
 substrate-interface==1.7.11
-pytz
