@@ -98,6 +98,7 @@ class BaseValidatorNeuron(BaseNeuron):
         self.init_wandb()
 
         self.last_metagraph_update_dt = None
+        self.has_enough_stake = None
         # Init sync with the network. Updates the metagraph.
         self.sync()
 
@@ -414,7 +415,7 @@ class BaseValidatorNeuron(BaseNeuron):
                 f"cannot be broadcast to uids array of shape {uids_array.shape}"
             )
 
-        if hasattr(self, "has_enough_stake"):
+        if self.has_enough_stake is not None:
             rewards = rewards * self.has_enough_stake[uids_array]
             bt.logging.debug(f"Rewards after considering minimum miner alpha amount: {rewards}")
 
