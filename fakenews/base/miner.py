@@ -214,8 +214,8 @@ class BaseMinerNeuron(BaseNeuron):
                 if i == self.uid:
                     if total_colkey_alpha_stake < 0:
                         bt.logging.critical(
-                            f"The total stake for your coldkey on this subnet does not meet the minimum alpha steak condition for all miners registered with that coldkey."
+                            "The total stake for your coldkey on this subnet does not meet the minimum alpha steak condition for all miners registered with that coldkey."
                             "Responses from this miner will not be accepted by validators!"
-                            "Please icrease the stake for any hotkey corresponding your coldkey: {coldkey} on this subnet to fulfill this condition."
+                            f"Please icrease the stake for any hotkey corresponding your coldkey: {coldkey} on this subnet to fulfill this condition."
                         )
                     break
