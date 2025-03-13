@@ -205,17 +205,19 @@ class BaseMinerNeuron(BaseNeuron):
             if hotkey_stake.netuid == self.config.netuid:
                 total_colkey_alpha_stake += hotkey_stake.stake.tao
 
+        remaining_stake = total_colkey_alpha_stake
         miners_minimum_alpha = calculate_minimum_miner_alpha()
 
         for i, coldkey in enumerate(self.metagraph.coldkeys):
             if coldkey == miners_coldkey:
-                total_colkey_alpha_stake -= miners_minimum_alpha
+                remaining_stake -= miners_minimum_alpha
 
                 if i == self.uid:
-                    if total_colkey_alpha_stake < 0:
+                    if remaining_stake < 0:
                         bt.logging.critical(
-                            "The total stake for your coldkey on this subnet does not meet the minimum alpha steak condition for all miners registered with that coldkey."
-                            "Responses from this miner will not be accepted by validators!"
-                            f"Please icrease the stake for any hotkey corresponding your coldkey: {coldkey} on this subnet to fulfill this condition."
+                            "The total stake for your coldkey on this subnet does not meet the minimum alpha steak condition for all miners registered with that coldkey. "
+                            "Responses from this miner will not be accepted by validators! "
+                            f"Please icrease the stake for any hotkey corresponding your coldkey: {coldkey} on this subnet to fulfill this condition. "
+                            f"Current total stake: {total_colkey_alpha_stake}, Minimum stake for each miner: {miners_minimum_alpha}"
                         )
                     break
