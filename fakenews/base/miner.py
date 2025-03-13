@@ -198,7 +198,7 @@ class BaseMinerNeuron(BaseNeuron):
         time.sleep(self.METAGRAPH_UPDATE_INTERVAL)
 
     def _check_miner_minimum_alpha(self):
-        miners_coldkey = self.wallet.coldkey.ss58_address
+        miners_coldkey = self.metagraph.coldkeys[self.uid]
         total_colkey_alpha_stake = 0
 
         for hotkey_stake in self.subtensor.get_stake_for_coldkey(miners_coldkey):
@@ -214,7 +214,8 @@ class BaseMinerNeuron(BaseNeuron):
                 if i == self.uid:
                     if total_colkey_alpha_stake < 0:
                         bt.logging.critical(
-                            f"Your coldkey stake is below the minimum required stake of {miners_minimum_alpha}."
-                            f" Please increase your stake for this hotkey to continue mining."
+                            f"The total stake for your coldkey on this subnet does not meet the minimum alpha steak condition for all miners registered with that coldkey."
+                            "Responses from this miner will not be accepted by validators!"
+                            "Please icrease the stake for any hotkey corresponding your coldkey: {coldkey} on this subnet to fulfill this condition."
                         )
                     break
