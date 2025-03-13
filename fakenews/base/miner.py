@@ -26,8 +26,9 @@ from typing import Union
 import bittensor as bt
 
 from fakenews.base.neuron import BaseNeuron
-from fakenews.utils.config import add_miner_args
 from fakenews.base.utils.min_miners_alpha import calculate_minimum_miner_alpha
+from fakenews.utils.config import add_miner_args
+
 
 class BaseMinerNeuron(BaseNeuron):
     """

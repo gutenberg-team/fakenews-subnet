@@ -34,8 +34,8 @@ import wandb
 
 import fakenews
 from fakenews.base.neuron import BaseNeuron
-from fakenews.base.utils.weight_utils import convert_weights_and_uids_for_emit, process_weights_for_netuid
 from fakenews.base.utils.min_miners_alpha import calculate_minimum_miner_alpha
+from fakenews.base.utils.weight_utils import convert_weights_and_uids_for_emit, process_weights_for_netuid
 from fakenews.exceptions import TaskDefinitionError
 from fakenews.mock import MockDendrite
 from fakenews.utils.config import add_validator_args
@@ -326,8 +326,9 @@ class BaseValidatorNeuron(BaseNeuron):
 
     def resync_metagraph(self):
         now = dt.datetime.now(tz=dt.timezone.utc)
-        if self.last_metagraph_update_dt is not None and (now -
-            self.last_metagraph_update_dt) < dt.timedelta(seconds=self.config.neuron.epoch_length * 12):
+        if self.last_metagraph_update_dt is not None and (now - self.last_metagraph_update_dt) < dt.timedelta(
+            seconds=self.config.neuron.epoch_length * 12
+        ):
             return
 
         """Resyncs the metagraph and updates the hotkeys and moving averages based on the new metagraph."""
