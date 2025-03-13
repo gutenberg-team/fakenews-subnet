@@ -27,7 +27,7 @@ import bittensor as bt
 
 from fakenews.base.neuron import BaseNeuron
 from fakenews.utils.config import add_miner_args
-
+from fakenews.base.utils.min_miners_alpha import calculate_minimum_miner_alpha
 
 class BaseMinerNeuron(BaseNeuron):
     """
@@ -35,6 +35,7 @@ class BaseMinerNeuron(BaseNeuron):
     """
 
     neuron_type: str = "MinerNeuron"
+    METAGRAPH_UPDATE_INTERVAL = 60 * 10  # 10 minutes
 
     @classmethod
     def add_args(cls, parser: argparse.ArgumentParser):
@@ -191,4 +192,28 @@ class BaseMinerNeuron(BaseNeuron):
 
         # Sync the metagraph.
         self.metagraph.sync(subtensor=self.subtensor)
-        time.sleep(10)
+        self._check_miner_minimum_alpha()
+
+        time.sleep(self.METAGRAPH_UPDATE_INTERVAL)
+
+    def _check_miner_minimum_alpha(self):
+        miners_coldkey = self.wallet.coldkey.ss58_address
+        total_colkey_alpha_stake = 0
+
+        for hotkey_stake in self.subtensor.get_stake_for_coldkey(miners_coldkey):
+            if hotkey_stake.netuid == self.config.netuid:
+                total_colkey_alpha_stake += hotkey_stake.stake.tao
+
+        miners_minimum_alpha = calculate_minimum_miner_alpha()
+
+        for i, coldkey in enumerate(self.metagraph.coldkeys):
+            if coldkey == miners_coldkey:
+                total_colkey_alpha_stake -= miners_minimum_alpha
+
+                if i == self.uid:
+                    if total_colkey_alpha_stake < 0:
+                        bt.logging.critical(
+                            f"Your coldkey stake is below the minimum required stake of {miners_minimum_alpha}."
+                            f" Please increase your stake for this hotkey to continue mining."
+                        )
+                    break
