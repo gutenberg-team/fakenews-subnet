@@ -371,9 +371,16 @@ class BaseValidatorNeuron(BaseNeuron):
         min_miner_alpha = calculate_minimum_miner_alpha()
         bt.logging.info(f"min_miner_alpha: {min_miner_alpha}")
 
+        not_enough_stake_uids = []
         for i, coldkey in enumerate(self.metagraph.coldkeys):
-            self.has_enough_stake[i] = coldkey_stake[coldkey] - min_miner_alpha >= 0
+            has_enough_stake = int(coldkey_stake[coldkey] - min_miner_alpha >= 0)
+            self.has_enough_stake[i] = has_enough_stake
+            if has_enough_stake == 0:
+                not_enough_stake_uids.append(i)
+
             coldkey_stake[coldkey] -= min_miner_alpha
+
+        bt.logging.info(f"not_enough_stake_neurons: {not_enough_stake_uids}")
 
         # Update the hotkeys.
         self.hotkeys = copy.deepcopy(self.metagraph.hotkeys)
@@ -407,8 +414,9 @@ class BaseValidatorNeuron(BaseNeuron):
                 f"cannot be broadcast to uids array of shape {uids_array.shape}"
             )
 
-        rewards = rewards * self.has_enough_stake[uids_array]
-        bt.logging.debug(f"Rewards after considering minimum miner alpha amount: {rewards}")
+        if hasattr(self, "has_enough_stake"):
+            rewards = rewards * self.has_enough_stake[uids_array]
+            bt.logging.debug(f"Rewards after considering minimum miner alpha amount: {rewards}")
 
         # Update scores with rewards produced by this step.
         alpha: float = self.config.neuron.moving_average_alpha
@@ -425,6 +433,7 @@ class BaseValidatorNeuron(BaseNeuron):
             step=self.step,
             scores=self.scores,
             hotkeys=self.hotkeys,
+            has_enough_stake=self.has_enough_stake,
         )
         self.save_miner_history()
 
@@ -437,6 +446,10 @@ class BaseValidatorNeuron(BaseNeuron):
         self.step = state["step"]
         self.scores = state["scores"]
         self.hotkeys = state["hotkeys"]
+
+        if "has_enough_stake" in state.files:
+            self.has_enough_stake = state["has_enough_stake"]
+
         self.load_miner_history()
 
     def save_miner_history(self):
