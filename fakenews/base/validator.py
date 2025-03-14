@@ -332,7 +332,7 @@ class BaseValidatorNeuron(BaseNeuron):
         # Sync the metagraph.
         self.metagraph.sync(subtensor=self.subtensor)
 
-        self.has_enough_stake = np.zeros(len(self.hotkeys), dtype=np.float32)
+        self.has_enough_stake = np.zeros(len(self.metagraph.hotkeys), dtype=np.float32)
 
         coldkey_stake = {}
         #  Consider that several hotkeys can be associated with the same coldkey.
