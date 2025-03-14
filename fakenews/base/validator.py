@@ -437,7 +437,11 @@ class BaseValidatorNeuron(BaseNeuron):
             self.step = state["step"]
             self.scores = state["scores"]
             self.hotkeys = state["hotkeys"]
-            self.has_enough_stake = state["has_enough_stake"]
+            if "has_enough_stake" in state.files:
+                self.has_enough_stake = state["has_enough_stake"]
+            else:
+                self.has_enough_stake = np.ones(len(self.metagraph.hotkeys), dtype=np.float32)
+
         except OSError:
             bt.logging.warning("No state file found. Starting fresh!")
             self.step = 0
