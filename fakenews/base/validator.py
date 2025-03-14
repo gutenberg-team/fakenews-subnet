@@ -432,15 +432,16 @@ class BaseValidatorNeuron(BaseNeuron):
         bt.logging.info("Loading validator state.")
 
         # Load the state of the validator from file.
-        state = np.load(self.config.neuron.full_path + "/state.npz")
-        self.step = state["step"]
-        self.scores = state["scores"]
-        self.hotkeys = state["hotkeys"]
-
-        if "has_enough_stake" in state.files:  # Backward compatibility
+        try:
+            state = np.load(self.config.neuron.full_path + "/state.npz")
+            self.step = state["step"]
+            self.scores = state["scores"]
+            self.hotkeys = state["hotkeys"]
             self.has_enough_stake = state["has_enough_stake"]
-        else:
-            self.has_enough_stake = np.ones(len(self.hotkeys), dtype=np.float32)
+        except OSError:
+            bt.logging.warning("No state file found. Starting fresh!")
+            self.step = 0
+            self.has_enough_stake = np.ones(len(self.metagraph.hotkeys), dtype=np.float32)
 
         self.load_miner_history()
 
