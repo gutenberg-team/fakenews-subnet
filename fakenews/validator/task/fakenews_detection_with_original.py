@@ -77,7 +77,7 @@ class FakenewsDetectionWithOriginal(ValidatorTask):
         (StrongOriginalV5Prompt, 0.2),
         (WeakOriginalV1Prompt, 0.2),
     ]
-    ALLOW_PROMPTS_REPEAT: bool = False
+    ALLOW_PROMPTS_REPEAT: bool = True
     PROMPTS_SAMPLE_SIZE: int = 2
 
     def __init__(self, openai_api_key: str, keypair: "Keypair"):
@@ -109,7 +109,7 @@ class FakenewsDetectionWithOriginal(ValidatorTask):
         log_article = article_text.replace("\n", " ")
         bt.logging.debug(f"Original article url: {original_article.url}, text: {log_article}")
 
-        prompts = [p(article_text) for p in self._select_sampled_prompts_1_fake_1_original()]
+        prompts = [p(article_text) for p in self._select_sampled_prompts()]
 
         try:
             results = await asyncio.gather(*(self._openai_client.get_prompt_completions_async(p) for p in prompts))
