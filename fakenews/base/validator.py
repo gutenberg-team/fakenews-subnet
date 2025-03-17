@@ -92,7 +92,7 @@ class BaseValidatorNeuron(BaseNeuron):
         self._validate_tasks()
 
         self.performance_trackers = {t: None for t in self.tasks}
-        self.load_miner_history()
+        self.load_state()
 
         self.init_wandb()
 
@@ -405,10 +405,14 @@ class BaseValidatorNeuron(BaseNeuron):
         bt.logging.info("Loading validator state.")
 
         # Load the state of the validator from file.
-        state = np.load(self.config.neuron.full_path + "/state.npz")
-        self.step = state["step"]
-        self.scores = state["scores"]
-        self.hotkeys = state["hotkeys"]
+        try:
+            state = np.load(self.config.neuron.full_path + "/state.npz")
+            self.step = state["step"]
+            self.scores = state["scores"]
+            self.hotkeys = state["hotkeys"]
+        except OSError:
+            bt.logging.warning("No state file found. Starting fresh!")
+            self.step = 0
         self.load_miner_history()
 
     def save_miner_history(self):
