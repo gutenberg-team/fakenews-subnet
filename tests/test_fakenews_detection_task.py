@@ -18,6 +18,4 @@ def test_select_sampled_prompts_1_fake_1_original():
         assert len(prompts) == 2
 
     # assert that all items are unique
-    assert any(
-        prompts != selected_prompts[0] for prompts in selected_prompts
-    )
+    assert any(prompts != selected_prompts[0] for prompts in selected_prompts)

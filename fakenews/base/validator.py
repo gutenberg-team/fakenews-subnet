@@ -34,6 +34,7 @@ import wandb
 
 import fakenews
 from fakenews.base.neuron import BaseNeuron
+from fakenews.base.utils.min_miners_alpha import calculate_minimum_miner_alpha
 from fakenews.base.utils.weight_utils import convert_weights_and_uids_for_emit, process_weights_for_netuid
 from fakenews.exceptions import TaskDefinitionError
 from fakenews.mock import MockDendrite
@@ -93,7 +94,6 @@ class BaseValidatorNeuron(BaseNeuron):
 
         self.performance_trackers = {t: None for t in self.tasks}
         self.load_state()
-
         self.init_wandb()
 
         # Init sync with the network. Updates the metagraph.
@@ -332,6 +332,29 @@ class BaseValidatorNeuron(BaseNeuron):
         # Sync the metagraph.
         self.metagraph.sync(subtensor=self.subtensor)
 
+        self.has_enough_stake = np.zeros(len(self.metagraph.hotkeys), dtype=np.float32)
+
+        coldkey_stake = {}
+        #  Consider that several hotkeys can be associated with the same coldkey.
+        for coldkey in np.unique(self.metagraph.coldkeys):
+            coldkey_stake[coldkey] = 0
+            for hotkey_stake in self.subtensor.get_stake_for_coldkey(coldkey):
+                coldkey_stake[coldkey] += hotkey_stake.stake.tao if hotkey_stake.netuid == self.config.netuid else 0
+
+        min_miner_alpha = calculate_minimum_miner_alpha()
+        bt.logging.info(f"min_miner_alpha: {min_miner_alpha}")
+
+        not_enough_stake_uids = []
+        for i, coldkey in enumerate(self.metagraph.coldkeys):
+            has_enough_stake = int(coldkey_stake[coldkey] - min_miner_alpha >= 0)
+            self.has_enough_stake[i] = has_enough_stake
+            if has_enough_stake == 0:
+                not_enough_stake_uids.append(i)
+
+            coldkey_stake[coldkey] -= min_miner_alpha
+
+        bt.logging.info(f"not_enough_stake_neurons: {not_enough_stake_uids}")
+
         # Check if the metagraph axon info has changed.
         if previous_metagraph.axons == self.metagraph.axons:
             return
@@ -382,6 +405,9 @@ class BaseValidatorNeuron(BaseNeuron):
                 f"cannot be broadcast to uids array of shape {uids_array.shape}"
             )
 
+        rewards = rewards * self.has_enough_stake[uids_array]
+        bt.logging.debug(f"Rewards after considering minimum miner alpha amount: {rewards}")
+
         # Update scores with rewards produced by this step.
         alpha: float = self.config.neuron.moving_average_alpha
         self.scores[uids_array] = alpha * rewards + (1 - alpha) * self.scores[uids_array]
@@ -397,6 +423,7 @@ class BaseValidatorNeuron(BaseNeuron):
             step=self.step,
             scores=self.scores,
             hotkeys=self.hotkeys,
+            has_enough_stake=self.has_enough_stake,
         )
         self.save_miner_history()
 
@@ -410,9 +437,16 @@ class BaseValidatorNeuron(BaseNeuron):
             self.step = state["step"]
             self.scores = state["scores"]
             self.hotkeys = state["hotkeys"]
+            if "has_enough_stake" in state.files:
+                self.has_enough_stake = state["has_enough_stake"]
+            else:
+                self.has_enough_stake = np.ones(len(self.metagraph.hotkeys), dtype=np.float32)
+
         except OSError:
             bt.logging.warning("No state file found. Starting fresh!")
             self.step = 0
+            self.has_enough_stake = np.ones(len(self.metagraph.hotkeys), dtype=np.float32)
+
         self.load_miner_history()
 
     def save_miner_history(self):
