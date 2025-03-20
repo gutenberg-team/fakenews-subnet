@@ -26,6 +26,7 @@ from typing import Union
 import bittensor as bt
 
 from fakenews.base.neuron import BaseNeuron
+from fakenews.base.utils.min_miners_alpha import calculate_minimum_miner_alpha
 from fakenews.utils.config import add_miner_args
 
 
@@ -35,6 +36,7 @@ class BaseMinerNeuron(BaseNeuron):
     """
 
     neuron_type: str = "MinerNeuron"
+    METAGRAPH_UPDATE_INTERVAL = 60 * 10  # 10 minutes
 
     @classmethod
     def add_args(cls, parser: argparse.ArgumentParser):
@@ -191,4 +193,31 @@ class BaseMinerNeuron(BaseNeuron):
 
         # Sync the metagraph.
         self.metagraph.sync(subtensor=self.subtensor)
-        time.sleep(10)
+        self._check_miner_minimum_alpha()
+
+        time.sleep(self.METAGRAPH_UPDATE_INTERVAL)
+
+    def _check_miner_minimum_alpha(self):
+        miners_coldkey = self.metagraph.coldkeys[self.uid]
+        total_colkey_alpha_stake = 0
+
+        for hotkey_stake in self.subtensor.get_stake_for_coldkey(miners_coldkey):
+            if hotkey_stake.netuid == self.config.netuid:
+                total_colkey_alpha_stake += hotkey_stake.stake.tao
+
+        remaining_stake = total_colkey_alpha_stake
+        miners_minimum_alpha = calculate_minimum_miner_alpha()
+
+        for i, coldkey in enumerate(self.metagraph.coldkeys):
+            if coldkey == miners_coldkey:
+                remaining_stake -= miners_minimum_alpha
+
+                if i == self.uid:
+                    if remaining_stake < 0:
+                        bt.logging.critical(
+                            "The total stake for your coldkey on this subnet does not meet the minimum alpha steak condition for all miners registered with that coldkey. "
+                            "Responses from this miner will not be accepted by validators! "
+                            f"Please icrease the stake for any hotkey corresponding your coldkey: {coldkey} on this subnet to fulfill this condition. "
+                            f"Current total stake: {total_colkey_alpha_stake}, Minimum stake for each miner: {miners_minimum_alpha}"
+                        )
+                    break

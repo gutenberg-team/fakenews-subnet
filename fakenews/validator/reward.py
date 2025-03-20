@@ -14,8 +14,8 @@
 # THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
-from collections import defaultdict
 import math
+from collections import defaultdict
 from typing import Final
 
 import bittensor as bt
@@ -67,7 +67,6 @@ class RewardCalculator:
             normalized_probs = cls._normalize_miner_probs(probs, labels)
 
             for task, performance_tracker in performance_trackers.items():
-
                 if task == current_task:
                     for normalized_score, label in zip(normalized_probs, labels):
                         performance_tracker.update(uid, normalized_score, label, hotkey)
@@ -122,24 +121,28 @@ class RewardCalculator:
         normalized_metadata = defaultdict(list)
         for miner_metadata in miner_rewards_calculating_metadata:
             for task_name, metadata in miner_metadata.items():
-                normalized_metadata[task_name].append({
-                    "uid": metadata["miner_uid"],
-                    "probs": metadata["probabilities"],
-                    "long": metadata["metrics_long"],
-                    "short": metadata["metrics_short"],
-                    "wght_rwd": metadata["weighted_reward"],
-                })
+                normalized_metadata[task_name].append(
+                    {
+                        "uid": metadata["miner_uid"],
+                        "probs": metadata["probabilities"],
+                        "long": metadata["metrics_long"],
+                        "short": metadata["metrics_short"],
+                        "wght_rwd": metadata["weighted_reward"],
+                    }
+                )
 
         normalized_metadata = dict(normalized_metadata)
 
-        log_message = f"Calculating rewards for task {current_task.TASK_NAME}. Long alpha: {cls._LONG_ALPHA}, " + \
-            f"long term window: {cls._LONG_TERM_WINDOW}, short term window: {cls._SHORT_TERM_WINDOW}, " + \
-            f"Miner calculating metadata: {str(normalized_metadata).replace(' ', '')}"
+        log_message = (
+            f"Calculating rewards for task {current_task.TASK_NAME}. Long alpha: {cls._LONG_ALPHA}, "
+            + f"long term window: {cls._LONG_TERM_WINDOW}, short term window: {cls._SHORT_TERM_WINDOW}, "
+            + f"Miner calculating metadata: {str(normalized_metadata).replace(' ', '')}"
+        )
 
         max_log_length = 3950
         log_messages = []
         if len(log_message) > max_log_length:
-            log_messages = [log_message[i:i + max_log_length] for i in range(0, len(log_message), max_log_length)]
+            log_messages = [log_message[i : i + max_log_length] for i in range(0, len(log_message), max_log_length)]
         else:
             log_messages = [log_message]
 
