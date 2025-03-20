@@ -406,7 +406,7 @@ class BaseValidatorNeuron(BaseNeuron):
             )
 
         rewards = rewards * self.has_enough_stake[uids_array]
-        bt.logging.debug(f"Rewards after considering minimum miner alpha amount: {rewards}")
+        bt.logging.debug(f"Rewards after considering minimum miner alpha amount: {rewards.tolist()}")
 
         # Update scores with rewards produced by this step.
         alpha: float = self.config.neuron.moving_average_alpha
