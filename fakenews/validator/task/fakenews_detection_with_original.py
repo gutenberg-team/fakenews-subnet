@@ -63,6 +63,7 @@ class FakenewsDetectionWithOriginal(ValidatorTask):
     TASK_NAME: str = "FakenewsDetectionWithOriginal"
     REWARD_WEIGHT: float = 1.0
     FORWARD_PROBABILTY: float = 1.0
+    TIMEOUT: int = 30
     FAKE_SAMPLING_PROBABILITIES: ClassVar[list[tuple[ValidatorPrompt, float]]] = [
         (WeakFakeV4Prompt, 0.6),
         (StrongFakeV1Prompt, 0.4),
@@ -72,12 +73,12 @@ class FakenewsDetectionWithOriginal(ValidatorTask):
         (StrongOriginalV5Prompt, 0.6),
     ]
     PROMPT_SAMPLING_PROBABILITIES: ClassVar[list[tuple[ValidatorPrompt, float]]] = [
-        (WeakFakeV4Prompt, 0.3),
-        (StrongFakeV1Prompt, 0.3),
-        (StrongOriginalV5Prompt, 0.2),
-        (WeakOriginalV1Prompt, 0.2),
+        (WeakFakeV4Prompt, 0.25),
+        (StrongFakeV1Prompt, 0.25),
+        (StrongOriginalV5Prompt, 0.25),
+        (WeakOriginalV1Prompt, 0.25),
     ]
-    ALLOW_PROMPTS_REPEAT: bool = False
+    ALLOW_PROMPTS_REPEAT: bool = True
     PROMPTS_SAMPLE_SIZE: int = 2
 
     def __init__(self, openai_api_key: str, keypair: "Keypair"):
@@ -107,9 +108,9 @@ class FakenewsDetectionWithOriginal(ValidatorTask):
 
         article_text = original_article.body
         log_article = article_text.replace("\n", " ")
-        bt.logging.debug(f"Original article url: {original_article.url}, text: {log_article}")
+        bt.logging.debug(f"Original article title: {original_article.title}")
 
-        prompts = [p(article_text) for p in self._select_sampled_prompts_1_fake_1_original()]
+        prompts = [p(article_text) for p in self._select_sampled_prompts()]
 
         try:
             results = await asyncio.gather(*(self._openai_client.get_prompt_completions_async(p) for p in prompts))
@@ -147,7 +148,7 @@ class FakenewsDetectionWithOriginal(ValidatorTask):
 
         return ArticleSynapse(
             articles_to_review=articles_to_review,
-            original_article=article_text,
+            original_article=None,
             fake_probabilities=[-1.0] * len(prompts),
         ), labels
 

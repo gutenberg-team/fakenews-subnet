@@ -11,6 +11,7 @@ class ValidatorTask(ABC):
     TASK_NAME: str = "Base"
     REWARD_WEIGHT: float = 1.0
     FORWARD_PROBABILTY: float = 1.0
+    TIMEOUT: int = 15
 
     @abstractmethod
     async def prepare_synapse(self, *args, **kwargs) -> Optional[ArticleSynapse]:

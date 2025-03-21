@@ -50,7 +50,7 @@ async def forward(self: BaseValidatorNeuron):
         axons=axons,
         synapse=synapse,
         deserialize=True,
-        timeout=15,
+        timeout=task.TIMEOUT,
     )
 
     # Log the results for monitoring purposes.
