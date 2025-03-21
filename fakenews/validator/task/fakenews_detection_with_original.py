@@ -63,6 +63,7 @@ class FakenewsDetectionWithOriginal(ValidatorTask):
     TASK_NAME: str = "FakenewsDetectionWithOriginal"
     REWARD_WEIGHT: float = 1.0
     FORWARD_PROBABILTY: float = 1.0
+    TIMEOUT: int = 30
     FAKE_SAMPLING_PROBABILITIES: ClassVar[list[tuple[ValidatorPrompt, float]]] = [
         (WeakFakeV4Prompt, 0.6),
         (StrongFakeV1Prompt, 0.4),
