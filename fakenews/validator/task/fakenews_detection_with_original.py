@@ -107,7 +107,7 @@ class FakenewsDetectionWithOriginal(ValidatorTask):
 
         article_text = original_article.body
         log_article = article_text.replace("\n", " ")
-        bt.logging.debug(f"Original article url: {original_article.url}, text: {log_article}")
+        bt.logging.debug(f"Original article title: {original_article.title}")
 
         prompts = [p(article_text) for p in self._select_sampled_prompts()]
 
