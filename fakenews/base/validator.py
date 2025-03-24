@@ -88,6 +88,7 @@ class BaseValidatorNeuron(BaseNeuron):
 
         self.tasks = [
             tasks.FakenewsDetectionWithOriginal(openai_api_key=openai_api_key, keypair=self.dendrite.keypair),
+            tasks.FakenewsDetectionNoOriginal(openai_api_key=openai_api_key, keypair=self.dendrite.keypair),
         ]
 
         self._validate_tasks()
