@@ -26,7 +26,7 @@ import fakenews
 # import base miner class which takes care of most of the boilerplate
 from fakenews.base.miner import BaseMinerNeuron
 from fakenews.services import OpenAIClient
-from fakenews.services.openai.prompts import GetProbabilitesPrompt
+from fakenews.services.openai.prompts import GetProbabilitesPrompt, GetProbabilitesNoOriginalPrompt
 
 
 class Miner(BaseMinerNeuron):
@@ -36,7 +36,11 @@ class Miner(BaseMinerNeuron):
         self.openai_client = OpenAIClient(api_key=self.config.openai_api_key)
 
     async def forward(self, synapse: fakenews.protocol.ArticleSynapse) -> fakenews.protocol.ArticleSynapse:
-        prompt = GetProbabilitesPrompt(synapse.original_article, synapse.articles_to_review)
+        if synapse.original_article is None:
+            prompt = GetProbabilitesNoOriginalPrompt(synapse.articles_to_review)
+        else:
+            prompt = GetProbabilitesPrompt(synapse.original_article, synapse.articles_to_review)
+
         predictions = await self.openai_client.get_prompt_completions_async(prompt)
 
         for i, pred in enumerate(predictions):
