@@ -148,7 +148,7 @@ class FakenewsDetectionWithOriginal(ValidatorTask):
 
         return ArticleSynapse(
             articles_to_review=articles_to_review,
-            original_article=None,
+            original_article=article_text,
             fake_probabilities=[-1.0] * len(prompts),
         ), labels
 
