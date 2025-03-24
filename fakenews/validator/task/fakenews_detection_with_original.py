@@ -73,10 +73,10 @@ class FakenewsDetectionWithOriginal(ValidatorTask):
         (StrongOriginalV5Prompt, 0.6),
     ]
     PROMPT_SAMPLING_PROBABILITIES: ClassVar[list[tuple[ValidatorPrompt, float]]] = [
-        (WeakFakeV4Prompt, 0.3),
-        (StrongFakeV1Prompt, 0.3),
-        (StrongOriginalV5Prompt, 0.2),
-        (WeakOriginalV1Prompt, 0.2),
+        (WeakFakeV4Prompt, 0.25),
+        (StrongFakeV1Prompt, 0.25),
+        (StrongOriginalV5Prompt, 0.25),
+        (WeakOriginalV1Prompt, 0.25),
     ]
     ALLOW_PROMPTS_REPEAT: bool = True
     PROMPTS_SAMPLE_SIZE: int = 2
