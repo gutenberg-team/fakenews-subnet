@@ -52,26 +52,17 @@ class Metadata(BaseModel):
     original_article_metadata: OriginalArticleMetadata
 
 
-class FakenewsDetectionWithOriginal(ValidatorTask):
+class FakenewsDetectionNoOriginal(ValidatorTask):
     """
     Task for generating paraphrased article and fakenews article using LLMs.
-    Original article is attached to the synapse.
     """
 
     __slots__ = ["__metadata", "_news_api_client", "_openai_client"]
 
-    TASK_NAME: str = "FakenewsDetectionWithOriginal"
-    REWARD_WEIGHT: float = 0.75
-    FORWARD_PROBABILTY: float = 0.75
-    TIMEOUT: int = 15
-    FAKE_SAMPLING_PROBABILITIES: ClassVar[list[tuple[ValidatorPrompt, float]]] = [
-        (WeakFakeV4Prompt, 0.6),
-        (StrongFakeV1Prompt, 0.4),
-    ]
-    PARAPHRASE_SAMPLING_PROBABILITIES: ClassVar[list[tuple[ValidatorPrompt, float]]] = [
-        (WeakOriginalV1Prompt, 0.4),
-        (StrongOriginalV5Prompt, 0.6),
-    ]
+    TASK_NAME: str = "FakenewsDetectionNoOriginal"
+    REWARD_WEIGHT: float = 0.25
+    FORWARD_PROBABILTY: float = 0.25
+    TIMEOUT: int = 30
     PROMPT_SAMPLING_PROBABILITIES: ClassVar[list[tuple[ValidatorPrompt, float]]] = [
         (WeakFakeV4Prompt, 0.25),
         (StrongFakeV1Prompt, 0.25),
@@ -107,9 +98,6 @@ class FakenewsDetectionWithOriginal(ValidatorTask):
         original_article = await self._news_api_client.fetch_article()
 
         article_text = original_article.body
-        log_article = article_text.replace("\n", " ")
-        bt.logging.debug(f"Original article title: {original_article.title}")
-
         prompts = [p(article_text) for p in self._select_sampled_prompts()]
 
         try:
@@ -148,7 +136,7 @@ class FakenewsDetectionWithOriginal(ValidatorTask):
 
         return ArticleSynapse(
             articles_to_review=articles_to_review,
-            original_article=article_text,
+            original_article=None,
             fake_probabilities=[-1.0] * len(prompts),
         ), labels
 
@@ -191,19 +179,4 @@ class FakenewsDetectionWithOriginal(ValidatorTask):
                 prompts.pop(index)
                 sample_rates.pop(index)
 
-        return sampled_prompts
-
-    def _select_sampled_prompts_1_fake_1_original(self) -> list[ValidatorPrompt]:
-        sampled_prompts = []
-
-        fake_prompts = [p for p, _ in self.FAKE_SAMPLING_PROBABILITIES]
-        fake_sample_rates = [r for _, r in self.FAKE_SAMPLING_PROBABILITIES]
-
-        paraphrase_prompts = [p for p, _ in self.PARAPHRASE_SAMPLING_PROBABILITIES]
-        paraphrase_sample_rates = [r for _, r in self.PARAPHRASE_SAMPLING_PROBABILITIES]
-
-        sampled_prompts.append(choices(fake_prompts, weights=fake_sample_rates, k=1)[0])  # noqa: S311
-        sampled_prompts.append(choices(paraphrase_prompts, weights=paraphrase_sample_rates, k=1)[0])  # noqa: S311
-
-        shuffle(sampled_prompts)
         return sampled_prompts

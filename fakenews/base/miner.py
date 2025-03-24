@@ -36,7 +36,6 @@ class BaseMinerNeuron(BaseNeuron):
     """
 
     neuron_type: str = "MinerNeuron"
-    METAGRAPH_UPDATE_INTERVAL = 60 * 10  # 10 minutes
 
     @classmethod
     def add_args(cls, parser: argparse.ArgumentParser):
@@ -127,6 +126,7 @@ class BaseMinerNeuron(BaseNeuron):
                 # Sync metagraph and potentially set weights.
                 self.sync()
                 self.step += 1
+                time.sleep(60)
 
             # If someone intentionally stops the miner, it'll safely terminate operations.
             except KeyboardInterrupt:
@@ -195,7 +195,7 @@ class BaseMinerNeuron(BaseNeuron):
         self.metagraph.sync(subtensor=self.subtensor)
         self._check_miner_minimum_alpha()
 
-        time.sleep(self.METAGRAPH_UPDATE_INTERVAL)
+        time.sleep(10)
 
     def _check_miner_minimum_alpha(self):
         miners_coldkey = self.metagraph.coldkeys[self.uid]
