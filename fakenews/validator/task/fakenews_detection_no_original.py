@@ -59,7 +59,7 @@ class FakenewsDetectionNoOriginal(ValidatorTask):
 
     __slots__ = ["__metadata", "_news_api_client", "_openai_client"]
 
-    TASK_NAME: str = "FakenewsDetectionWithOriginal"
+    TASK_NAME: str = "FakenewsDetectionNoOriginal"
     REWARD_WEIGHT: float = 0.25
     FORWARD_PROBABILTY: float = 0.25
     TIMEOUT: int = 30
