@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class NewsAPIClient:
     __slots__ = ["_auth"]
 
-    BASE_URL = "http://84.32.185.173:8000"
+    BASE_URL = "http://api.article.hsdev.biz:8001"
     GET_ARTICLE_URL = f"{BASE_URL}/articles/random"
     SAVE_ARTICLES_DATASET_URL = f"{BASE_URL}/articles/dataset/create"
 
