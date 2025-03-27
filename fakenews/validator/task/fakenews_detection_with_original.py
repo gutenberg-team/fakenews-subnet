@@ -61,8 +61,8 @@ class FakenewsDetectionWithOriginal(ValidatorTask):
     __slots__ = ["__metadata", "_news_api_client", "_openai_client"]
 
     TASK_NAME: str = "FakenewsDetectionWithOriginal"
-    REWARD_WEIGHT: float = 0.25
-    FORWARD_PROBABILTY: float = 0.25
+    REWARD_WEIGHT: float = 0
+    FORWARD_PROBABILTY: float = 0
     TIMEOUT: int = 15
     FAKE_SAMPLING_PROBABILITIES: ClassVar[list[tuple[ValidatorPrompt, float]]] = [
         (WeakFakeV4Prompt, 0.6),
