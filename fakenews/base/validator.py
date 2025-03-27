@@ -87,7 +87,6 @@ class BaseValidatorNeuron(BaseNeuron):
         openai_api_key = os.environ.get("OPENAI_API_KEY")
 
         self.tasks = [
-            tasks.FakenewsDetectionWithOriginal(openai_api_key=openai_api_key, keypair=self.dendrite.keypair),
             tasks.FakenewsDetectionNoOriginal(openai_api_key=openai_api_key, keypair=self.dendrite.keypair),
         ]
 
